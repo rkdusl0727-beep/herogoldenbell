@@ -2,7 +2,7 @@ import type { Question } from '../types'
 
 export const defaultQuestions: Question[] = [
   // 노래 기억 퀴즈 20문제 — 긴 가사 대신 짧은 기억 단서만 사용합니다.
-  { id:'s01', category:'song', type:'blank', difficulty:'쉬움', question:'노래 첫머리에서 나라를 세운 할아버지의 이름은?  □□□', options:[], answer:'단군', explanation:'노래의 첫 인물은 단군이에요.', hint:'ㄷㄱ', image:'mountain' },
+  { id:'s01', category:'song', type:'blank', difficulty:'쉬움', question:'노래 첫머리에서 나라를 세운 할아버지의 이름은?  □□', options:[], answer:'단군', explanation:'노래의 첫 인물은 단군이에요.', hint:'ㄷㄱ', image:'mountain' },
   { id:'s02', category:'song', type:'blank', difficulty:'쉬움', question:'노래 초반, 고구려를 세운 왕의 이름은?  □□□', options:[], answer:'동명왕', explanation:'동명왕은 노래 초반에 등장해요.', hint:'동○왕', image:'crown' },
   { id:'s03', category:'song', type:'blank', difficulty:'보통', question:'노래에서 백제 온조왕 다음, 알에서 나왔다고 소개되는 인물은?  □□□□', options:[], answer:'박혁거세', explanation:'노래에서는 온조왕 다음에 박혁거세가 나와요.', hint:'ㅂㅎㄱㅅ', image:'egg' },
   { id:'s04', category:'song', type:'blank', difficulty:'보통', question:'노래에서 “번쩍번쩍” 떠올리게 하는 이름은?  □□□', options:[], answer:'홍길동', explanation:'짧은 기억 단서 “번쩍번쩍”과 함께 홍길동을 떠올릴 수 있어요.', hint:'ㅎㄱㄷ', image:'sparkles' },

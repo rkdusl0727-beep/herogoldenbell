@@ -16,15 +16,26 @@ const DEFAULT_SETTINGS: Settings = {
   finals:true, teamNames:['햇살팀','별빛팀'],
 }
 
-const icons: Record<string,string> = {
-  mountain:'⛰️', crown:'👑', egg:'🥚', sparkles:'✨', map:'🗺️', children:'🧒', king:'👑',
-  'turtle-ship':'⛵', flag:'🇰🇷', sundial:'☀️', cotton:'☁️', painting:'🎨', cards:'🃏',
-  hunmin:'가', letters:'한', waves:'🌊', book:'📚', flower:'🌼', 'water-clock':'💧', hall:'🏛️',
+const iconCells: Record<string,number> = {
+  mountain:0, crown:1, egg:2, sparkles:3, map:4, children:5, king:6,
+  'turtle-ship':7, flag:8, sundial:9, cotton:10, painting:11, cards:12,
+  hunmin:13, letters:14, waves:15, book:16, flower:17, 'water-clock':18, hall:19,
 }
 
 function shuffle<T>(items:T[]) { return [...items].sort(() => Math.random() - .5) }
 function modeName(mode:GameMode) { return ({practice:'연습 골든벨',challenge:'도전 골든벨',team:'팀 대항전',cooperate:'협동 골든벨'} as const)[mode] }
 function isVerbal(q:Question) { return ['blank','initial','missing'].includes(q.type) }
+function displayQuestion(q:Question, revealed:boolean) {
+  if (q.type === 'blank') {
+    const blanks = Array.from(q.answer.replace(/\s/g,'')).map(()=>'□').join(' ')
+    return q.question.replace(/□(?:\s*□)*/g, revealed ? q.answer : blanks)
+  }
+  if (q.type === 'missing' && revealed) {
+    const marker = q.question.lastIndexOf('  ')
+    return marker >= 0 ? `${q.question.slice(0,marker+2)}${q.answer}` : q.answer
+  }
+  return q.question
+}
 
 function Bell({small=false, ringing=false}:{small?:boolean;ringing?:boolean}) {
   return <div className={`bell ${small?'bell-small':''} ${ringing?'ringing':''}`} aria-label="황금 골든벨">
@@ -34,7 +45,9 @@ function Bell({small=false, ringing=false}:{small?:boolean;ringing?:boolean}) {
 
 function Art({name, label}:{name:string;label?:string}) {
   if (name.startsWith('data:image')) return <img className="question-image" src={name} alt={label || '문제 삽화'} />
-  return <div className="symbol-art" aria-label={`${label || ''} 상징 삽화`}><span>{icons[name] || '⭐'}</span><small>상징 삽화</small></div>
+  const cell = iconCells[name] ?? 3
+  const col = cell % 5, row = Math.floor(cell / 5)
+  return <div className="symbol-art png-art" aria-label={`${label || ''} 교육용 PNG 삽화`} style={{backgroundImage:"url('./assets/quiz-icons.png')",backgroundSize:'500% 400%',backgroundPosition:`${col*25}% ${row*(100/3)}%`}}><small>교육용 PNG 삽화</small></div>
 }
 
 function App() {
@@ -174,7 +187,7 @@ function App() {
       <div className="question-meta"><span className={`cat cat-${q.category}`}>{categoryNames[q.category]}</span><span>{typeNames[q.type]}</span><span>{q.difficulty}</span>{settings.finals&&index>=queue.length-3&&<strong><Medal/> 결승 문제</strong>}</div>
       <section className="question-card">
         <Art name={q.image} label={q.person || q.answer}/>
-        <div className="question-content"><p className="question-number">문제 {index+1}</p><h2>{revealed && ['blank','missing'].includes(q.type) ? q.question.replace(/□+/g,q.answer) : q.question}</h2>
+        <div className="question-content"><p className="question-number">문제 {index+1}</p><h2>{displayQuestion(q,revealed)}</h2>
           {hintStep>0&&!revealed&&<div className="hint-box"><HelpCircle/> 힌트 {hintStep}: {q.type==='missing'&&hintStep===1?q.hint.charAt(0):q.hint}</div>}
           {q.type==='sequence'&&<div className="sequence-picked">{selected.length?selected.map((v,i)=><span key={v}>{i+1}. {v}</span>):<small>아래 카드를 순서대로 눌러 주세요</small>}</div>}
           {!isVerbal(q)&&<div className={`options ${q.type==='ox'?'ox-options':''}`}>{q.options.map((o,i)=><button key={o} onClick={()=>choose(o)} className={`${selected.includes(o)?'selected':''} ${revealed&&o===q.answer?'answer':''} ${revealed&&selected.includes(o)&&o!==q.answer?'wrong':''}`}><span>{q.type==='ox'?o:String.fromCharCode(65+i)}</span>{o}</button>)}</div>}
