@@ -27,6 +27,10 @@ const portraitById: Record<string,string> = {
   p13:'./assets/people/bang-jeong-hwan.png', p16:'./assets/people/shin-saimdang.png',
   p19:'./assets/people/jang-yeong-sil.png', p22:'./assets/people/mun-ik-jeom.png',
 }
+const balancedChoiceIds = [
+  'p01','p02','p03','p04','p05','p07','p08','p09','p10','p11','p12','p13','p14',
+  'p16','p17','p18','p19','p20','p21','p22','p23','p24','h01','h02','h03','h04',
+]
 
 function shuffle<T>(items:T[]) {
   const mixed=[...items]
@@ -47,6 +51,16 @@ function displayQuestion(q:Question, revealed:boolean) {
     return marker >= 0 ? `${q.question.slice(0,marker+2)}${q.answer}` : q.answer
   }
   return q.question
+}
+function distributeAnswerPosition(q:Question) {
+  if(q.type!=='choice' || q.options.length<3 || !q.options.includes(q.answer)) return q
+  const knownIndex=balancedChoiceIds.indexOf(q.id)
+  const number=Number(q.id.replace(/\D/g,'')) || 1
+  const target=(knownIndex>=0?knownIndex:number-1)%q.options.length
+  const distractors=q.options.filter(option=>option!==q.answer)
+  const options=[...distractors]
+  options.splice(target,0,q.answer)
+  return {...q,options}
 }
 
 function Bell({small=false, ringing=false}:{small?:boolean;ringing?:boolean}) {
@@ -123,7 +137,7 @@ function App() {
   function stopSpeak(){ window.speechSynthesis?.cancel() }
 
   function buildQueue(categories:Category[]=settings.categories, count=settings.count) {
-    let pool=bank.filter(v=>categories.includes(v.category))
+    let pool=bank.filter(v=>categories.includes(v.category)).map(distributeAnswerPosition)
     const limit=Math.min(count,pool.length)
     let result=settings.random?shuffle(pool):[...pool]
     result=result.slice(0,limit)
@@ -140,7 +154,7 @@ function App() {
     setSettings(next); startGame(next)
   }
   function startGame(next=settings) {
-    const pool=bank.filter(v=>next.categories.includes(v.category)); const n=Math.min(next.count,pool.length)
+    const pool=bank.filter(v=>next.categories.includes(v.category)).map(distributeAnswerPosition); const n=Math.min(next.count,pool.length)
     let result=next.random?shuffle(pool):[...pool]; result=result.slice(0,n)
     if(next.finals && n>=3){ const finals=bank.filter(v=>v.final&&next.categories.includes(v.category)).slice(0,3); const ids=new Set(finals.map(v=>v.id)); result=[...result.filter(v=>!ids.has(v.id)).slice(0,n-finals.length),...finals] }
     if(!result.length){notify('출제할 문제를 하나 이상 선택해 주세요.');return}
@@ -205,7 +219,7 @@ function App() {
         <div className="question-content"><p className="question-number">문제 {index+1}</p><h2>{displayQuestion(q,revealed)}</h2>
           {hintStep>0&&!revealed&&<div className="hint-box"><HelpCircle/> 힌트 {hintStep}: {q.type==='missing'&&hintStep===1?q.hint.charAt(0):q.hint}</div>}
           {q.type==='sequence'&&<div className="sequence-picked">{selected.length?selected.map((v,i)=><span key={v}>{i+1}. {v}</span>):<small>아래 카드를 순서대로 눌러 주세요</small>}</div>}
-          {!isVerbal(q)&&<div className={`options ${q.type==='ox'?'ox-options':''}`}>{q.options.map((o,i)=><button key={o} onClick={()=>choose(o)} className={`${selected.includes(o)?'selected':''} ${revealed&&o===q.answer?'answer':''} ${revealed&&selected.includes(o)&&o!==q.answer?'wrong':''}`}><span>{q.type==='ox'?o:String.fromCharCode(65+i)}</span>{o}</button>)}</div>}
+          {!isVerbal(q)&&<div className={`options ${q.type==='ox'?'ox-options':''}`}>{q.options.map((o,i)=><button key={o} onClick={()=>choose(o)} className={`${selected.includes(o)?'selected':''} ${revealed&&o===q.answer?'answer':''} ${revealed&&selected.includes(o)&&o!==q.answer?'wrong':''}`}><span>{q.type==='ox'?o:String.fromCharCode(65+i)}</span>{q.type==='ox'?'':o}</button>)}</div>}
           {isVerbal(q)&&!revealed&&<div className="teacher-judge"><span>아이들이 말한 답을 표시해 주세요</span><button className={teacherCorrect===true?'active':''} onClick={()=>setTeacherCorrect(true)}><Check/> 맞았어요</button><button className={teacherCorrect===false?'active no':''} onClick={()=>setTeacherCorrect(false)}><X/> 다시 생각해요</button></div>}
           {revealed&&<div className="answer-panel"><div className="answer-title"><Sparkles/><span>정답</span><b>{q.answer}</b></div><p>{q.explanation}</p></div>}
         </div>
