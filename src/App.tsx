@@ -21,6 +21,12 @@ const iconCells: Record<string,number> = {
   'turtle-ship':7, flag:8, sundial:9, cotton:10, painting:11, cards:12,
   hunmin:13, letters:14, waves:15, book:16, flower:17, 'water-clock':18, hall:19,
 }
+const portraitById: Record<string,string> = {
+  p01:'./assets/people/sejong.png', p04:'./assets/people/yi-sun-sin.png',
+  p07:'./assets/people/yu-gwan-sun.png', p10:'./assets/people/kim-jeong-ho.png',
+  p13:'./assets/people/bang-jeong-hwan.png', p16:'./assets/people/shin-saimdang.png',
+  p19:'./assets/people/jang-yeong-sil.png', p22:'./assets/people/mun-ik-jeom.png',
+}
 
 function shuffle<T>(items:T[]) { return [...items].sort(() => Math.random() - .5) }
 function modeName(mode:GameMode) { return ({practice:'연습 골든벨',challenge:'도전 골든벨',team:'팀 대항전',cooperate:'협동 골든벨'} as const)[mode] }
@@ -44,7 +50,7 @@ function Bell({small=false, ringing=false}:{small?:boolean;ringing?:boolean}) {
 }
 
 function Art({name, label}:{name:string;label?:string}) {
-  if (name.startsWith('data:image')) return <img className="question-image" src={name} alt={label || '문제 삽화'} />
+  if (name.startsWith('data:image') || name.endsWith('.png')) return <img className={`question-image ${name.endsWith('.png')?'person-portrait':''}`} src={name} alt={`${label || '위인'} 교육용 PNG 삽화`} />
   const cell = iconCells[name] ?? 3
   const col = cell % 5, row = Math.floor(cell / 5)
   return <div className="symbol-art png-art" aria-label={`${label || ''} 교육용 PNG 삽화`} style={{backgroundImage:"url('./assets/quiz-icons.png')",backgroundSize:'500% 400%',backgroundPosition:`${col*25}% ${row*(100/3)}%`}}><small>교육용 PNG 삽화</small></div>
@@ -53,7 +59,10 @@ function Art({name, label}:{name:string;label?:string}) {
 function App() {
   const [screen,setScreen] = useState<Screen>('home')
   const [bank,setBank] = useState<Question[]>(() => {
-    try { return JSON.parse(localStorage.getItem('goldenbell-bank') || '') || defaultQuestions } catch { return defaultQuestions }
+    try {
+      const saved:Question[] = JSON.parse(localStorage.getItem('goldenbell-bank') || '') || defaultQuestions
+      return saved.map(q => portraitById[q.id] ? {...q,image:portraitById[q.id]} : q)
+    } catch { return defaultQuestions }
   })
   const [settings,setSettings] = useState<Settings>(() => {
     try { return {...DEFAULT_SETTINGS,...JSON.parse(localStorage.getItem('goldenbell-settings') || '{}')} } catch { return DEFAULT_SETTINGS }
