@@ -31,6 +31,8 @@ const balancedChoiceIds = [
   'p01','p02','p03','p04','p05','p07','p08','p09','p10','p11','p12','p13','p14',
   'p16','p17','p18','p19','p20','p21','p22','p23','p24','h01','h02','h03','h04',
 ]
+const QUESTION_COPY_VERSION = '2026-11-02-natural-questions-v1'
+const refreshedQuestionIds = new Set(['s01','s02','s03','s04','s05','s06'])
 
 function shuffle<T>(items:T[]) {
   const mixed=[...items]
@@ -38,6 +40,51 @@ function shuffle<T>(items:T[]) {
     const j=Math.floor(Math.random()*(i+1)); [mixed[i],mixed[j]]=[mixed[j],mixed[i]]
   }
   return mixed
+}
+function shuffleBalanced(items:Question[]) {
+  const buckets = new Map<Question['type'],Question[]>()
+  shuffle(items).forEach(question => {
+    const bucket=buckets.get(question.type) || []
+    bucket.push(question); buckets.set(question.type,bucket)
+  })
+  const result:Question[]=[]
+  let lastType:Question['type']|undefined
+  let lastCategory:Category|undefined
+  let lastPerson:string|undefined
+  let verbalStreak=0
+  const verbalCount=items.filter(isVerbal).length
+  const selectableCount=items.length-verbalCount
+  const maxVerbalStreak=selectableCount ? Math.max(1,Math.ceil(verbalCount/(selectableCount+1))) : verbalCount
+  while(result.length<items.length){
+    const available=[...buckets.entries()].filter(([,bucket])=>bucket.length)
+    const hasSelectable=available.some(([,bucket])=>!isVerbal(bucket[0]))
+    const answerBalanced=verbalStreak>=maxVerbalStreak && hasSelectable
+      ? available.filter(([,bucket])=>!isVerbal(bucket[0]))
+      : available
+    const differentType=answerBalanced.filter(([type])=>type!==lastType)
+    const candidates=differentType.length?differentType:answerBalanced
+    const largest=Math.max(...candidates.map(([,bucket])=>bucket.length))
+    const typeChoices=shuffle(candidates.filter(([,bucket])=>bucket.length===largest))
+    const [type,bucket]=typeChoices[0]
+    const varied=bucket.filter(question=>question.category!==lastCategory && (!question.person || question.person!==lastPerson))
+    const categoryVaried=bucket.filter(question=>question.category!==lastCategory)
+    const pickFrom=varied.length?varied:categoryVaried.length?categoryVaried:bucket
+    const picked=pickFrom[Math.floor(Math.random()*pickFrom.length)]
+    bucket.splice(bucket.indexOf(picked),1)
+    result.push(picked); lastType=type; lastCategory=picked.category; lastPerson=picked.person
+    verbalStreak=isVerbal(picked)?verbalStreak+1:0
+  }
+  return result
+}
+function prepareQueue(pool:Question[], count:number, random:boolean, includeFinals:boolean) {
+  const limit=Math.min(count,pool.length)
+  if(!includeFinals || limit<3) return (random?shuffleBalanced(pool):[...pool]).slice(0,limit)
+  const finals=pool.filter(question=>question.final).slice(0,3)
+  const finalIds=new Set(finals.map(question=>question.id))
+  const regularPool=pool.filter(question=>!finalIds.has(question.id))
+  const regular=(random?shuffleBalanced(regularPool):regularPool).slice(0,Math.max(0,limit-finals.length))
+  const orderedFinals=random?shuffleBalanced(finals):finals
+  return [...regular,...orderedFinals]
 }
 function modeName(mode:GameMode) { return ({practice:'연습 골든벨',challenge:'도전 골든벨',team:'팀 대항전',cooperate:'협동 골든벨'} as const)[mode] }
 function isVerbal(q:Question) { return ['blank','initial','missing'].includes(q.type) }
@@ -80,9 +127,22 @@ function App() {
   const [screen,setScreen] = useState<Screen>('home')
   const [bank,setBank] = useState<Question[]>(() => {
     try {
-      const saved:Question[] = JSON.parse(localStorage.getItem('goldenbell-bank') || '') || defaultQuestions
+      let saved:Question[] = JSON.parse(localStorage.getItem('goldenbell-bank') || '') || defaultQuestions
+      if(localStorage.getItem('goldenbell-copy-version')!==QUESTION_COPY_VERSION){
+        const defaultsById=new Map(defaultQuestions.map(question=>[question.id,question]))
+        saved=saved.map(question=>{
+          const updated=defaultsById.get(question.id)
+          return updated&&refreshedQuestionIds.has(question.id)
+            ? {...question,question:updated.question,explanation:updated.explanation,hint:updated.hint}
+            : question
+        })
+        localStorage.setItem('goldenbell-copy-version',QUESTION_COPY_VERSION)
+      }
       return saved.map(q => portraitById[q.id] ? {...q,image:portraitById[q.id]} : q)
-    } catch { return defaultQuestions }
+    } catch {
+      localStorage.setItem('goldenbell-copy-version',QUESTION_COPY_VERSION)
+      return defaultQuestions
+    }
   })
   const [settings,setSettings] = useState<Settings>(() => {
     try { return {...DEFAULT_SETTINGS,...JSON.parse(localStorage.getItem('goldenbell-settings') || '{}')} } catch { return DEFAULT_SETTINGS }
@@ -136,17 +196,6 @@ function App() {
   }
   function stopSpeak(){ window.speechSynthesis?.cancel() }
 
-  function buildQueue(categories:Category[]=settings.categories, count=settings.count) {
-    let pool=bank.filter(v=>categories.includes(v.category)).map(distributeAnswerPosition)
-    const limit=Math.min(count,pool.length)
-    let result=settings.random?shuffle(pool):[...pool]
-    result=result.slice(0,limit)
-    if(settings.finals && limit>=3){
-      const finals=bank.filter(v=>v.final && categories.includes(v.category)).slice(0,3)
-      const finalIds=new Set(finals.map(v=>v.id)); result=[...result.filter(v=>!finalIds.has(v.id)).slice(0,limit-finals.length),...finals]
-    }
-    return result
-  }
   function startPreset(kind:'song'|'person'|'all') {
     const cats:Category[]=kind==='song'?['song']:kind==='person'?['person']:['song','person','hangul']
     const max=bank.filter(v=>cats.includes(v.category)).length
@@ -155,8 +204,7 @@ function App() {
   }
   function startGame(next=settings) {
     const pool=bank.filter(v=>next.categories.includes(v.category)).map(distributeAnswerPosition); const n=Math.min(next.count,pool.length)
-    let result=next.random?shuffle(pool):[...pool]; result=result.slice(0,n)
-    if(next.finals && n>=3){ const finals=bank.filter(v=>v.final&&next.categories.includes(v.category)).slice(0,3); const ids=new Set(finals.map(v=>v.id)); result=[...result.filter(v=>!ids.has(v.id)).slice(0,n-finals.length),...finals] }
+    const result=prepareQueue(pool,n,next.random,next.finals)
     if(!result.length){notify('출제할 문제를 하나 이상 선택해 주세요.');return}
     setSettings({...next,count:n}); setQueue(result); setIndex(0); setScores([0,0]); setCorrect(0); setAwarded({}); resetQuestion(); setScreen('game')
   }
