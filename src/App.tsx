@@ -28,7 +28,13 @@ const portraitById: Record<string,string> = {
   p19:'./assets/people/jang-yeong-sil.png', p22:'./assets/people/mun-ik-jeom.png',
 }
 
-function shuffle<T>(items:T[]) { return [...items].sort(() => Math.random() - .5) }
+function shuffle<T>(items:T[]) {
+  const mixed=[...items]
+  for(let i=mixed.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1)); [mixed[i],mixed[j]]=[mixed[j],mixed[i]]
+  }
+  return mixed
+}
 function modeName(mode:GameMode) { return ({practice:'연습 골든벨',challenge:'도전 골든벨',team:'팀 대항전',cooperate:'협동 골든벨'} as const)[mode] }
 function isVerbal(q:Question) { return ['blank','initial','missing'].includes(q.type) }
 function displayQuestion(q:Question, revealed:boolean) {
@@ -130,7 +136,7 @@ function App() {
   function startPreset(kind:'song'|'person'|'all') {
     const cats:Category[]=kind==='song'?['song']:kind==='person'?['person']:['song','person','hangul']
     const max=bank.filter(v=>cats.includes(v.category)).length
-    const next={...settings,categories:cats,count:kind==='all'?max:Math.min(settings.count,max)}
+    const next={...settings,categories:cats,count:kind==='all'?max:Math.min(settings.count,max),random:true}
     setSettings(next); startGame(next)
   }
   function startGame(next=settings) {
