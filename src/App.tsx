@@ -31,7 +31,7 @@ const balancedChoiceIds = [
   'p01','p02','p04','p05','p07','p08','p10','p11','p13','p14','p16','p17','p19','p20','p22','p23',
   'h01','h02','h03','h04','h05','h06',
 ]
-const QUESTION_COPY_VERSION = '2026-11-02-lyric-clues-v6'
+const QUESTION_COPY_VERSION = '2026-11-02-lyric-clues-v8'
 
 function shuffle<T>(items:T[]) {
   const mixed=[...items]
@@ -92,6 +92,12 @@ function displayQuestion(q:Question, revealed:boolean) {
   }
   return q.question
 }
+function questionClue(q:Question) {
+  if(q.clue?.trim()) return q.clue
+  if(q.type!=='initial') return ''
+  return defaultQuestions.find(item=>item.type==='initial'&&item.answer===q.answer)?.clue
+    || '노래 가사에 나오는 이 위인은 누구일까요?'
+}
 function distributeAnswerPosition(q:Question) {
   if(q.type==='sequence') return {...q,options:shuffle(q.options)}
   if(q.type!=='choice' || q.options.length<3 || !q.options.includes(q.answer)) return q
@@ -127,7 +133,7 @@ function Art({name, label}:{name:string;label?:string}) {
   if (name.startsWith('data:image') || name.endsWith('.png')) return <img className={`question-image ${name.endsWith('.png')?'person-portrait':''}`} src={name} alt={`${label || '위인'} 그림`} />
   const cell = iconCells[name] ?? 3
   const col = cell % 5, row = Math.floor(cell / 5)
-  return <span className="symbol-art png-art" role="img" aria-label={`${label || '위인'} 그림`} style={{backgroundImage:"url('./assets/quiz-icons-v2.png')",backgroundSize:'500% 400%',backgroundPosition:`${col*25}% ${row*(100/3)}%`}} />
+  return <span className={`symbol-art png-art art-${name}`} role="img" aria-label={`${label || '위인'} 그림`} style={{backgroundImage:"url('./assets/quiz-icons-v2.png')",backgroundSize:'500% 400%',backgroundPosition:`${col*25}% ${row*(100/3)}%`}} />
 }
 
 function App() {
@@ -272,7 +278,7 @@ function App() {
       <div className="question-meta"><span className={`cat cat-${q.category}`}>{categoryNames[q.category]}</span><span>{typeNames[q.type]}</span><span>{q.difficulty}</span>{settings.finals&&index>=queue.length-3&&<strong><Medal/> 결승 문제</strong>}</div>
       <section className="question-card">
         <Art name={q.image} label={q.person || q.answer}/>
-        <div className={`question-content type-${q.type}`}><p className="question-number">문제 {index+1}</p>{q.clue&&<p className="question-clue">{q.clue}</p>}{q.type==='initial'&&<span className="initial-label">초성 힌트</span>}<h2>{displayQuestion(q,revealed)}</h2>
+        <div className={`question-content type-${q.type}`}><p className="question-number">문제 {index+1}</p>{questionClue(q)&&<p className="question-clue">{questionClue(q)}</p>}{q.type==='initial'&&<span className="initial-label">초성 힌트</span>}<h2>{displayQuestion(q,revealed)}</h2>
           {hintStep>0&&!revealed&&<div className="hint-box"><HelpCircle/> 힌트 {hintStep}: {hintText(q,hintStep)}</div>}
           {q.type==='sequence'&&<div className="sequence-picked">{selected.length?selected.map((v,i)=><span key={v}>{i+1}. {v}</span>):<small>아래 카드를 순서대로 눌러 주세요</small>}</div>}
           {!isVerbal(q)&&<div className={`options ${q.type==='ox'?'ox-options':''}`}>{q.options.map((o,i)=><button key={o} onClick={()=>choose(o)} className={`${selected.includes(o)?'selected':''} ${revealed&&o===q.answer?'answer':''} ${revealed&&selected.includes(o)&&o!==q.answer?'wrong':''}`}><span>{q.type==='ox'?o:String.fromCharCode(65+i)}</span>{q.type==='ox'?'':o}</button>)}</div>}

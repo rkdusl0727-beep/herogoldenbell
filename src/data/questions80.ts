@@ -14,12 +14,12 @@ const songBlank: Question[] = [
   {id:'s11',category:'song',type:'blank',difficulty:'보통',question:'노래의 ‘귀주대첩’과 이어지는 □□□',options:[],answer:'강감찬',explanation:'강감찬은 귀주대첩을 승리로 이끈 장군이에요.',hint:'고려의 장군이에요.',image:'cards'},
   {id:'s12',category:'song',type:'blank',difficulty:'쉬움',question:'노래의 ‘목화씨’와 이어지는 □□□',options:[],answer:'문익점',explanation:'문익점은 우리나라에 목화 재배가 퍼지는 데 기여했어요.',hint:'하얀 솜과 관련 있어요.',image:'cotton'},
   {id:'s13',category:'song',type:'blank',difficulty:'쉬움',question:'노래의 ‘과학’과 이어지는 □□□',options:[],answer:'장영실',explanation:'장영실은 여러 과학 기구 제작에 참여한 과학 기술자예요.',hint:'해시계와 물시계로 기억해요.',image:'sundial'},
-  {id:'s14',category:'song',type:'blank',difficulty:'쉬움',question:'노래의 ‘번쩍번쩍’과 이어지는 □□□',options:[],answer:'홍길동',explanation:'홍길동은 허균의 소설에서 어려운 사람을 돕는 인물이에요.',hint:'허균의 소설에 나와요.',image:'sparkles'},
+  {id:'s14',category:'song',type:'blank',difficulty:'쉬움',question:'노래의 ‘의적’과 이어지는 □□□',options:[],answer:'임꺽정',explanation:'가사에서 ‘의적’이라는 말 다음에 임꺽정의 이름이 나와요.',hint:'‘임’으로 시작하는 세 글자 이름이에요.',image:'sparkles'},
   {id:'s15',category:'song',type:'blank',difficulty:'쉬움',question:'노래의 ‘어린이날’과 이어지는 □□□',options:[],answer:'방정환',explanation:'방정환은 어린이를 소중히 여기고 어린이날을 만드는 데 힘썼어요.',hint:'어린이를 위한 글을 썼어요.',image:'children'},
 ]
 
 const initials: [string,string,string,string,string,string][] = [
-  ['s16','ㅊㅁㅅ','최무선','sparkles','노래에서 ‘화포’와 함께 나오는 위인은 누구일까요?','최무선은 화포를 만드는 기술을 발전시켜 나라를 지키는 데 힘썼어요.'],
+  ['s16','ㅊㅁㅅ','최무선','sparkles','화포를 만든 위인은 누구일까요?','최무선은 화포를 만드는 기술을 발전시켜 나라를 지키는 데 힘썼어요.'],
   ['s17','ㄱㅂㅅ','김부식','book','노래에서 ‘죽림칠현’ 다음에 나오는 위인은 누구일까요?','김부식은 고구려·백제·신라의 역사를 담은 《삼국사기》를 지었어요.'],
   ['s18','ㅈㅇㅇ','정약용','book','노래에서 ‘목민심서’와 함께 나오는 위인은 누구일까요?','정약용은 백성을 생각하는 마음을 담아 《목민심서》를 지었어요.'],
   ['s19','ㅈㅁㅈ','정몽주','book','노래에서 ‘일편단심’과 함께 나오는 위인은 누구일까요?','정몽주는 고려를 향한 충성스러운 마음을 「단심가」에 담았어요.'],
