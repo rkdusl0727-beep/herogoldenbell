@@ -251,7 +251,7 @@ function App() {
     <header className="brand-line"><span>어진반 위인 프로젝트</span><button className="icon-btn" onClick={()=>setScreen('settings')} aria-label="교사 설정"><SettingsIcon/></button></header>
     <main className="hero">
       <div className="hero-copy"><div className="eyebrow"><Sparkles/> 함께 기억하고, 함께 도전해요</div><h1>우리나라<br/><em>위인 골든벨</em></h1><p>위인들의 이야기를 기억하고 골든벨을 울려요!</p></div>
-      <div className="hero-bell"><div className="sunburst"/><Bell/></div>
+      <div className="hero-bell"><div className="sunburst"/><img className="hero-quiz-image" src="./assets/goldenbell-quiz-hero.png" alt="황금 골든벨을 울리는 어린이들" /></div>
     </main>
     <section className="start-grid" aria-label="게임 시작">
       <button className="start-card song" onClick={()=>startPreset('song')}><span className="card-icon">♪</span><b>노래 골든벨</b><small>4가지 유형 · 50문제</small><ArrowRight/></button>
