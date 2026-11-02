@@ -65,23 +65,18 @@ const songMissing: Question[] = missing.map(([id,masked,answer,hint,image])=>({
   explanation:`숨은 글자 ‘${Array.from(hint).join('·')}’을 넣으면 ${answer}이(가) 돼요.`,hint,image,final:id==='s40',
 }))
 
-const sequences: [string,string[],string,string][] = [
-  ['s41',['단군','동명왕','온조왕'],'단군이 가장 먼저 나와요.','쉬움'],
-  ['s42',['온조왕','박혁거세','광개토대왕'],'백제를 세운 왕이 먼저예요.','쉬움'],
-  ['s43',['이사부','백결선생','의자왕'],'신라 장군이 먼저예요.','보통'],
-  ['s44',['계백','관창','김유신'],'황산벌의 백제 장군이 먼저예요.','보통'],
-  ['s45',['원효대사','혜초','장보고'],'해골물 이야기의 인물이 먼저예요.','보통'],
-  ['s46',['장보고','대조영','강감찬'],'바다와 관련된 인물이 먼저예요.','보통'],
-  ['s47',['최무선','김부식','지눌'],'화포와 관련된 인물이 먼저예요.','도전'],
-  ['s48',['최영','황희','맹사성'],'고려의 장군이 먼저예요.','보통'],
-  ['s49',['장영실','신숙주','한명회'],'과학 기술자가 먼저예요.','도전'],
-  ['s50',['유관순','안창호','방정환'],'독립 만세를 외친 인물이 먼저예요.','쉬움'],
+const songClues: Question[] = [
+  {id:'s41',category:'song',type:'blank',difficulty:'보통',question:'가난할 때 거문고로 방아 소리를 냈다고 전해지는 □□□□',options:[],answer:'백결선생',explanation:'백결선생은 거문고로 방아 찧는 소리를 냈다는 이야기로 알려져 있어요.',hint:'이름에 ‘선생’이 들어가요.',image:'book'},
+  {id:'s42',category:'song',type:'blank',difficulty:'쉬움',question:'황산벌에서 용감하게 싸운 신라의 어린 화랑 □□',options:[],answer:'관창',explanation:'관창은 황산벌에서 용감하게 싸운 신라의 화랑이에요.',hint:'두 글자 이름이에요.',image:'cards'},
+  {id:'s43',category:'song',type:'blank',difficulty:'보통',question:'여행 기록 《왕오천축국전》을 남긴 승려 □□',options:[],answer:'혜초',explanation:'혜초는 여러 나라를 여행하고 《왕오천축국전》을 남겼어요.',hint:'두 글자 이름이에요.',image:'book'},
+  {id:'s44',category:'song',type:'blank',difficulty:'쉬움',question:'발해를 세운 □□□',options:[],answer:'대조영',explanation:'대조영은 고구려를 계승한 나라 발해를 세웠어요.',hint:'세 글자 이름이에요.',image:'crown'},
+  {id:'s45',category:'song',type:'blank',difficulty:'보통',question:'거란의 장수 소손녕과 말로 담판한 고려의 외교가 □□',options:[],answer:'서희',explanation:'서희는 소손녕과 담판해 고려의 땅을 지키는 데 힘썼어요.',hint:'두 글자 이름이에요.',image:'book'},
+  {id:'s46',category:'song',type:'blank',difficulty:'보통',question:'훈민정음 연구에 참여한 집현전 학자 □□□',options:[],answer:'신숙주',explanation:'신숙주는 집현전 학자로 훈민정음 연구에 참여했어요.',hint:'세 글자 이름이에요.',image:'letters'},
+  {id:'s47',category:'song',type:'blank',difficulty:'쉬움',question:'씨름과 서당처럼 사람들의 생활 모습을 그린 화가 □□□',options:[],answer:'김홍도',explanation:'김홍도는 사람들이 생활하는 모습을 생생한 그림으로 남겼어요.',hint:'성을 포함해 세 글자예요.',image:'painting'},
+  {id:'s48',category:'song',type:'blank',difficulty:'쉬움',question:'‘도산’이라는 호로 알려진 독립운동가 □□□',options:[],answer:'안창호',explanation:'안창호는 우리나라의 독립과 교육을 위해 힘쓴 독립운동가예요.',hint:'세 글자 이름이에요.',image:'flag'},
+  {id:'s49',category:'song',type:'blank',difficulty:'보통',question:'진주성 싸움 뒤 나라를 위해 용기 있게 행동한 □□',options:[],answer:'논개',explanation:'논개는 진주성 싸움과 관련된 용기 있는 인물로 기억돼요.',hint:'두 글자 이름이에요.',image:'flower'},
+  {id:'s50',category:'song',type:'blank',difficulty:'쉬움',question:'백성을 도운 암행어사 이야기로 유명한 □□□',options:[],answer:'박문수',explanation:'박문수는 백성을 살핀 암행어사 이야기로 널리 알려져 있어요.',hint:'세 글자 이름이에요.',image:'cards',final:true},
 ]
-const songSequence: Question[] = sequences.map(([id,sequence,hint,difficulty])=>({
-  id,category:'song',type:'sequence',difficulty:difficulty as Question['difficulty'],question:'가사에 등장하는 순서대로 인물 카드를 눌러 보세요.',
-  options:[...sequence].reverse(),answer:sequence.join(' → '),explanation:`정답 순서는 ${sequence.join(', ')}예요.`,
-  hint,image:'cards',sequence,final:id==='s50',
-}))
 
 const people: Question[] = [
   {id:'p01',category:'person',type:'choice',difficulty:'쉬움',question:'세종대왕은 어떤 일을 한 사람일까요?',options:['왕','화가','장군'],answer:'왕',explanation:'세종대왕은 조선의 왕이에요.',hint:'나라와 백성을 다스렸어요.',image:'./assets/people/sejong.png',person:'세종대왕'},
@@ -119,6 +114,6 @@ const hangul: Question[] = [
   {id:'h06',category:'hangul',type:'choice',difficulty:'도전',question:'훈민정음 해례본은 1997년 유네스코의 어떤 유산에 등재되었을까요?',options:['세계기록유산','세계자연유산','무형유산'],answer:'세계기록유산',explanation:'훈민정음 해례본은 1997년 유네스코 세계기록유산에 등재되었어요.',hint:'소중한 기록을 지키는 유산이에요.',image:'hunmin'},
 ]
 
-export const defaultQuestions: Question[] = [...songBlank,...songInitial,...songMissing,...songSequence,...people,...hangul]
+export const defaultQuestions: Question[] = [...songBlank,...songInitial,...songMissing,...songClues,...people,...hangul]
 export const categoryNames = {song:'노래 퀴즈',person:'개별 위인',hangul:'한글 심화'} as const
 export const typeNames = {blank:'가사 빈칸',initial:'초성 퀴즈',missing:'사라진 이름',sequence:'인물 순서',choice:'그림 3지선다',ox:'OX 퀴즈'} as const

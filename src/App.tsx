@@ -11,7 +11,7 @@ type Screen = 'home' | 'settings' | 'game' | 'editor' | 'finish'
 type SavedSession = { queueIds:string[]; index:number; scores:[number,number]; correct:number; settings:Settings }
 
 const DEFAULT_SETTINGS: Settings = {
-  mode:'practice', categories:['song','person','hangul'], questionTypes:['blank','initial','missing','sequence','choice','ox'], excludedQuestionIds:[], count:20, random:true,
+  mode:'practice', categories:['song','person','hangul'], questionTypes:['blank','initial','missing','choice','ox'], excludedQuestionIds:[], count:20, random:true,
   hints:true, voice:true, voiceRate:.9, sound:true, scoreboard:true, autoReveal:false,
   finals:true, teamNames:['햇살팀','별빛팀'],
 }
@@ -31,7 +31,7 @@ const balancedChoiceIds = [
   'p01','p02','p04','p05','p07','p08','p10','p11','p13','p14','p16','p17','p19','p20','p22','p23',
   'h01','h02','h03','h04','h05','h06',
 ]
-const QUESTION_COPY_VERSION = '2026-11-02-song-clues-v3'
+const QUESTION_COPY_VERSION = '2026-11-02-initial-clues-v5'
 
 function shuffle<T>(items:T[]) {
   const mixed=[...items]
@@ -205,7 +205,7 @@ function App() {
 
   function startPreset(kind:'song'|'person'|'all') {
     const cats:Category[]=kind==='song'?['song']:kind==='person'?['person']:['song','person','hangul']
-    const types:QuestionType[]=kind==='song'?['blank','initial','missing','sequence']:kind==='person'?['choice','ox']:['blank','initial','missing','sequence','choice','ox']
+    const types:QuestionType[]=kind==='song'?['blank','initial','missing']:kind==='person'?['choice','ox']:['blank','initial','missing','choice','ox']
     const max=bank.filter(v=>cats.includes(v.category)&&types.includes(v.type)&&!settings.excludedQuestionIds.includes(v.id)).length
     const next={...settings,categories:cats,questionTypes:types,count:kind==='all'?max:Math.min(settings.count,max),random:true}
     setSettings(next); startGame(next)
@@ -248,7 +248,7 @@ function App() {
       <div className="hero-bell"><div className="sunburst"/><img className="hero-quiz-image" src="./assets/goldenbell-quiz-hero.png" alt="황금 골든벨을 울리는 어린이들" /></div>
     </main>
     <section className="start-grid" aria-label="게임 시작">
-      <button className="start-card song" onClick={()=>startPreset('song')}><span className="card-icon">♪</span><b>노래 골든벨</b><small>4가지 유형 · 50문제</small><ArrowRight/></button>
+      <button className="start-card song" onClick={()=>startPreset('song')}><span className="card-icon">♪</span><b>노래 골든벨</b><small>3가지 유형 · 50문제</small><ArrowRight/></button>
       <button className="start-card person" onClick={()=>startPreset('person')}><span className="card-icon">♛</span><b>위인 골든벨</b><small>8명의 이야기 · 24문제</small><ArrowRight/></button>
       <button className="start-card all" onClick={()=>startPreset('all')}><span className="card-icon">★</span><b>전체 골든벨</b><small>노래 · 위인 · 한글 · 80문제</small><ArrowRight/></button>
     </section>
@@ -272,7 +272,7 @@ function App() {
       <div className="question-meta"><span className={`cat cat-${q.category}`}>{categoryNames[q.category]}</span><span>{typeNames[q.type]}</span><span>{q.difficulty}</span>{settings.finals&&index>=queue.length-3&&<strong><Medal/> 결승 문제</strong>}</div>
       <section className="question-card">
         <Art name={q.image} label={q.person || q.answer}/>
-        <div className={`question-content type-${q.type}`}><p className="question-number">문제 {index+1}</p>{q.clue&&<p className="question-clue">{q.clue}</p>}<h2>{displayQuestion(q,revealed)}</h2>
+        <div className={`question-content type-${q.type}`}><p className="question-number">문제 {index+1}</p>{q.clue&&<p className="question-clue">{q.clue}</p>}{q.type==='initial'&&<span className="initial-label">초성 힌트</span>}<h2>{displayQuestion(q,revealed)}</h2>
           {hintStep>0&&!revealed&&<div className="hint-box"><HelpCircle/> 힌트 {hintStep}: {hintText(q,hintStep)}</div>}
           {q.type==='sequence'&&<div className="sequence-picked">{selected.length?selected.map((v,i)=><span key={v}>{i+1}. {v}</span>):<small>아래 카드를 순서대로 눌러 주세요</small>}</div>}
           {!isVerbal(q)&&<div className={`options ${q.type==='ox'?'ox-options':''}`}>{q.options.map((o,i)=><button key={o} onClick={()=>choose(o)} className={`${selected.includes(o)?'selected':''} ${revealed&&o===q.answer?'answer':''} ${revealed&&selected.includes(o)&&o!==q.answer?'wrong':''}`}><span>{q.type==='ox'?o:String.fromCharCode(65+i)}</span>{q.type==='ox'?'':o}</button>)}</div>}
@@ -298,7 +298,7 @@ function Scoreboard({mode,correct,scores,teamNames}:{mode:GameMode;correct:numbe
 
 function SettingsPanel({settings,setSettings,bank,available,onBack,onEditor,onStart}:{settings:Settings;setSettings:(s:Settings)=>void;bank:Question[];available:number;onBack:()=>void;onEditor:()=>void;onStart:()=>void}){
   const modes:[GameMode,string,string][]=[['practice','연습 골든벨','힌트와 자유로운 이동'],['challenge','도전 골든벨','문제당 10점'],['team','팀 대항전','두 팀 점수판'],['cooperate','협동 골든벨','탈락 없이 모두 함께']]
-  const allTypes=Object.keys(typeNames) as QuestionType[]
+  const allTypes=(Object.keys(typeNames) as QuestionType[]).filter(type=>bank.some(question=>question.type===type))
   const quickCounts=[5,10,15,20,25,30,40,50,60,70]
   const matching=bank.filter(q=>settings.categories.includes(q.category)&&settings.questionTypes.includes(q.type))
   const countValue=Math.min(settings.count,Math.max(1,available))

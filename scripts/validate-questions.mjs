@@ -18,7 +18,7 @@ expect(count(defaultQuestions,'category','person')===24,'개별 위인 문제는
 expect(count(defaultQuestions,'category','hangul')===6,'한글 심화 문제는 6개여야 합니다.')
 
 const song=defaultQuestions.filter(q=>q.category==='song')
-const expectedSongTypes={blank:15,initial:15,missing:10,sequence:10}
+const expectedSongTypes={blank:25,initial:15,missing:10}
 for(const [type,total] of Object.entries(expectedSongTypes)) expect(count(song,'type',type)===total,`노래 ${type} 문제는 ${total}개여야 합니다.`)
 expect(song.every(q=>Object.hasOwn(expectedSongTypes,q.type)),'노래 문제에 허용되지 않은 유형이 있습니다.')
 expect(song.filter(q=>q.type==='initial').every(q=>q.clue?.includes('누구일까요?')),'초성 문제에는 인물과 업적을 연결하는 질문이 있어야 합니다.')
@@ -57,4 +57,4 @@ const oxAnswers=people.filter(q=>q.type==='ox').map(q=>q.answer)
 expect(oxAnswers.filter(answer=>answer==='O').length===4&&oxAnswers.filter(answer=>answer==='X').length===4,'OX 정답은 O 4개, X 4개여야 합니다.')
 
 if(errors.length){console.error(errors.join('\n'));process.exit(1)}
-console.log('검증 완료: 80문제 · 노래 50(15/15/10/10) · 위인 24 · 한글 6 · 정답/초성/빈칸/순서 정상')
+console.log('검증 완료: 80문제 · 노래 50(빈칸 25/초성 15/이름 완성 10) · 순서 문제 0 · 위인 24 · 한글 6')
