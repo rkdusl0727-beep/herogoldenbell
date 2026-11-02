@@ -124,10 +124,10 @@ function Bell({small=false, ringing=false}:{small?:boolean;ringing?:boolean}) {
 }
 
 function Art({name, label}:{name:string;label?:string}) {
-  if (name.startsWith('data:image') || name.endsWith('.png')) return <img className={`question-image ${name.endsWith('.png')?'person-portrait':''}`} src={name} alt={`${label || '위인'} 교육용 PNG 삽화`} />
+  if (name.startsWith('data:image') || name.endsWith('.png')) return <img className={`question-image ${name.endsWith('.png')?'person-portrait':''}`} src={name} alt={`${label || '위인'} 그림`} />
   const cell = iconCells[name] ?? 3
   const col = cell % 5, row = Math.floor(cell / 5)
-  return <div className="symbol-art png-art" aria-label={`${label || ''} 교육용 PNG 삽화`}><span className="png-tile" style={{backgroundImage:"url('./assets/quiz-icons.png')",backgroundSize:'500% 400%',backgroundPosition:`${col*25}% ${row*(100/3)}%`}}/></div>
+  return <div className="symbol-art png-art" aria-label={`${label || '위인'} 그림`}><span className="png-tile" style={{backgroundImage:"url('./assets/quiz-icons-cutout.png')",backgroundSize:'500% 400%',backgroundPosition:`${col*25}% ${row*(100/3)}%`}}/></div>
 }
 
 function App() {
