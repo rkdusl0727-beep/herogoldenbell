@@ -36,7 +36,7 @@ const initials: [string,string,string,string,string,string][] = [
   ['s30','ㅈㅇㅅ','장영실','sundial','과학 기술로 이름난 위인은 누구일까요?','장영실은 시간을 알려 주는 앙부일구와 자격루 제작에 참여했어요.'],
 ]
 const songInitial: Question[] = initials.map(([id,question,answer,image,clue,explanation])=>({
-  id,category:'song',type:'initial',difficulty:question.length>4?'보통':'쉬움',question,options:[],answer,
+  id,category:'song',type:'initial',difficulty:question.length>4?'보통':'쉬움',question:`${clue}\n초성: ${question}`,options:[],answer,
   explanation,hint:answer,clue,image,final:id==='s26',
 }))
 

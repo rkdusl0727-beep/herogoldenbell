@@ -31,7 +31,7 @@ const balancedChoiceIds = [
   'p01','p02','p04','p05','p07','p08','p10','p11','p13','p14','p16','p17','p19','p20','p22','p23',
   'h01','h02','h03','h04','h05','h06',
 ]
-const QUESTION_COPY_VERSION = '2026-11-02-natural-lyrics-v9'
+const QUESTION_COPY_VERSION = '2026-11-02-embedded-initial-clues-v10'
 
 function shuffle<T>(items:T[]) {
   const mixed=[...items]
@@ -90,11 +90,14 @@ function displayQuestion(q:Question, revealed:boolean) {
     const marker = q.question.lastIndexOf('  ')
     return marker >= 0 ? `${q.question.slice(0,marker+2)}${q.answer}` : q.answer
   }
+  if(q.type==='initial') return q.question.match(/초성:\s*([^\n]+)/)?.[1]?.trim() || q.question
   return q.question
 }
 function questionClue(q:Question) {
   if(q.clue?.trim()) return q.clue
   if(q.type!=='initial') return ''
+  const embedded=q.question.split(/\n초성:/)[0]?.trim()
+  if(embedded&&embedded!==q.question) return embedded
   return defaultQuestions.find(item=>item.type==='initial'&&item.answer===q.answer)?.clue
     || '노래 가사에 나오는 이 위인은 누구일까요?'
 }
