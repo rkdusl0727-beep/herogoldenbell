@@ -1,9 +1,9 @@
 import type { Question } from '../types'
 
 const songBlank: Question[] = [
-  {id:'s01',category:'song',type:'blank',difficulty:'쉬움',question:'나라를 세운 □□',options:[],answer:'단군',explanation:'단군은 우리나라를 처음 세웠다고 전해지는 인물이에요.',hint:'우리나라를 처음 세웠다고 전해져요.',image:'mountain'},
+  {id:'s01',category:'song',type:'blank',difficulty:'쉬움',question:'나라 세우니 □□',options:[],answer:'단군',explanation:'단군은 우리나라를 처음 세웠다고 전해지는 인물이에요.',hint:'우리나라를 처음 세웠다고 전해져요.',image:'mountain'},
   {id:'s02',category:'song',type:'blank',difficulty:'쉬움',question:'고구려 세운 □□□',options:[],answer:'동명왕',explanation:'동명왕은 고구려를 세운 왕이에요.',hint:'고구려와 관련된 왕이에요.',image:'crown'},
-  {id:'s03',category:'song',type:'blank',difficulty:'쉬움',question:'백제의 왕 □□□',options:[],answer:'온조왕',explanation:'온조왕은 백제를 세운 왕이에요.',hint:'백제와 관련된 왕이에요.',image:'crown'},
+  {id:'s03',category:'song',type:'blank',difficulty:'쉬움',question:'백제 □□□',options:[],answer:'온조왕',explanation:'온조왕은 백제를 세운 왕이에요.',hint:'백제와 관련된 왕이에요.',image:'crown'},
   {id:'s04',category:'song',type:'blank',difficulty:'보통',question:'알에서 나온 □□□□',options:[],answer:'박혁거세',explanation:'박혁거세는 알에서 태어났다고 전해지며 신라를 세운 왕이에요.',hint:'신라를 세운 왕이에요.',image:'egg'},
   {id:'s05',category:'song',type:'blank',difficulty:'보통',question:'만주 벌판 달려라 □□□□□',options:[],answer:'광개토대왕',explanation:'광개토대왕은 고구려의 영토를 크게 넓힌 왕이에요.',hint:'이름에 ‘대왕’이 들어가요.',image:'crown'},
   {id:'s06',category:'song',type:'blank',difficulty:'보통',question:'신라 장군 □□□',options:[],answer:'이사부',explanation:'이사부는 우산국을 정복한 신라의 장군이에요.',hint:'세 글자 이름이에요.',image:'cards'},
@@ -19,25 +19,25 @@ const songBlank: Question[] = [
 ]
 
 const initials: [string,string,string,string,string,string][] = [
-  ['s16','ㅊㅁㅅ','최무선','sparkles','화포를 만든 위인은 누구일까요?','최무선은 화포를 만드는 기술을 발전시켜 나라를 지키는 데 힘썼어요.'],
-  ['s17','ㄱㅂㅅ','김부식','book','죽림칠현 뒤에 나오는 위인은 누구일까요?','김부식은 고구려·백제·신라의 역사를 담은 《삼국사기》를 지었어요.'],
-  ['s18','ㅈㅇㅇ','정약용','book','목민심서를 지은 위인은 누구일까요?','정약용은 백성을 생각하는 마음을 담아 《목민심서》를 지었어요.'],
-  ['s19','ㅈㅁㅈ','정몽주','book','일편단심으로 알려진 위인은 누구일까요?','정몽주는 고려를 향한 충성스러운 마음을 「단심가」에 담았어요.'],
-  ['s20','ㅊㅇ','최영','cards','황금을 보기를 돌같이 하라고 말한 장군은 누구일까요?','최영은 나라를 지킨 고려의 장군으로 알려져 있어요.'],
-  ['s21','ㅎㅎ','황희','book','정승으로 불리는 위인은 누구일까요?','황희는 지혜로운 조선의 재상으로 오랫동안 나라의 일을 도왔어요.'],
-  ['s22','ㅁㅅㅅ','맹사성','book','황희 정승 다음 인물은 누구일까요?','맹사성은 높은 벼슬을 하면서도 검소하게 생활한 재상으로 알려져 있어요.'],
-  ['s23','ㅇㅇㄱ','이율곡','book','십만 양병을 주장한 학자는 누구일까요?','이율곡은 조선 시대의 학자로 학문과 나라의 일을 깊이 생각했어요.'],
-  ['s24','ㅇㅌㄱ','이퇴계','book','주리와 관련된 학자는 누구일까요?','이퇴계는 도산서원에서 제자들을 가르친 조선의 학자예요.'],
-  ['s25','ㅅㅅㅇㄷ','신사임당','painting','오죽헌과 관련된 인물은 누구일까요?','신사임당은 풀과 곤충을 자세히 관찰해 「초충도」를 그린 화가예요.'],
-  ['s26','ㅇㅅㅅ','이순신','turtle-ship','나라를 구한 장군은 누구일까요?','이순신은 거북선과 뛰어난 전술로 바다에서 나라를 지킨 장군이에요.'],
-  ['s27','ㅎㅅㅂ','한석봉','letters','삼 년 공부한 글씨 명인은 누구일까요?','한석봉은 꾸준히 연습해 뛰어난 글씨로 이름난 인물이에요.'],
-  ['s28','ㄱㅈㅎ','김정호','map','지도를 만든 인물은 누구일까요?','김정호는 우리 땅을 자세히 담은 대동여지도를 만들었어요.'],
-  ['s29','ㅇㄱㅅ','유관순','flag','만세 만세를 외친 인물은 누구일까요?','유관순은 태극기를 들고 독립 만세를 외친 독립운동가예요.'],
-  ['s30','ㅈㅇㅅ','장영실','sundial','과학 기술로 이름난 위인은 누구일까요?','장영실은 시간을 알려 주는 앙부일구와 자격루 제작에 참여했어요.'],
+  ['s16','ㅊㅁㅅ','최무선','sparkles','화포','최무선은 화포를 만드는 기술을 발전시켜 나라를 지키는 데 힘썼어요.'],
+  ['s17','ㄱㅂㅅ','김부식','book','죽림칠현','김부식은 고구려·백제·신라의 역사를 담은 《삼국사기》를 지었어요.'],
+  ['s18','ㅈㅇㅇ','정약용','book','목민심서','정약용은 백성을 생각하는 마음을 담아 《목민심서》를 지었어요.'],
+  ['s19','ㅈㅁㅈ','정몽주','book','일편단심','정몽주는 고려를 향한 충성스러운 마음을 「단심가」에 담았어요.'],
+  ['s20','ㅊㅇ','최영','cards','황금 보기를 돌같이','최영은 나라를 지킨 고려의 장군으로 알려져 있어요.'],
+  ['s21','ㅈㅈㅂ','정중부','book','무단 정치','정중부는 고려 시대 무신으로 권력을 잡았어요.'],
+  ['s22','ㅁㅅㅅ','맹사성','book','황희 정승','맹사성은 높은 벼슬을 하면서도 검소하게 생활한 재상으로 알려져 있어요.'],
+  ['s23','ㅇㅇㄱ','이율곡','book','십만 양병','이율곡은 조선 시대의 학자로 학문과 나라의 일을 깊이 생각했어요.'],
+  ['s24','ㅇㅌㄱ','이퇴계','book','주리','이퇴계는 도산서원에서 제자들을 가르친 조선의 학자예요.'],
+  ['s25','ㅅㅅㅇㄷ','신사임당','painting','오죽헌','신사임당은 풀과 곤충을 자세히 관찰해 「초충도」를 그린 화가예요.'],
+  ['s26','ㅇㅅㅅ','이순신','turtle-ship','나라 구한','이순신은 거북선과 뛰어난 전술로 바다에서 나라를 지킨 장군이에요.'],
+  ['s27','ㅎㅅㅂ','한석봉','letters','삼 년 공부','한석봉은 꾸준히 연습해 뛰어난 글씨로 이름난 인물이에요.'],
+  ['s28','ㄱㅈㅎ','김정호','map','지도','김정호는 우리 땅을 자세히 담은 대동여지도를 만들었어요.'],
+  ['s29','ㅇㄱㅅ','유관순','flag','만세 만세','유관순은 태극기를 들고 독립 만세를 외친 독립운동가예요.'],
+  ['s30','ㅈㅇㅅ','장영실','sundial','과학','장영실은 시간을 알려 주는 앙부일구와 자격루 제작에 참여했어요.'],
 ]
-const songInitial: Question[] = initials.map(([id,question,answer,image,clue,explanation])=>({
-  id,category:'song',type:'initial',difficulty:question.length>4?'보통':'쉬움',question:`${clue}\n초성: ${question}`,options:[],answer,
-  explanation,hint:answer,clue,image,final:id==='s26',
+const songInitial: Question[] = initials.map(([id,initials,answer,image,cue,explanation])=>({
+  id,category:'song',type:'initial',difficulty:initials.length>4?'보통':'쉬움',question:`${cue} ${initials}`,options:[],answer,
+  explanation,hint:answer,image,final:id==='s26',
 }))
 
 const missing: [string,string,string,string,string][] = [
@@ -47,30 +47,30 @@ const missing: [string,string,string,string,string][] = [
   ['s37','문 □ 점','문익점','익','cotton'],['s38','김 □ 호','김정호','정','map'],
   ['s39','장 □ 실','장영실','영','sundial'],['s40','안 □ 근','안중근','중','flag'],
 ]
-const missingClues: Record<string,string> = {
-  s31:'어린이날과 관련된 위인은 누구일까요?',
-  s32:'오죽헌과 관련된 인물은 누구일까요?',
-  s33:'만주 벌판을 달린 왕은 누구일까요?',
-  s34:'알에서 나온 왕은 누구일까요?',
-  s35:'만세 만세를 외친 인물은 누구일까요?',
-  s36:'나라를 구한 장군은 누구일까요?',
-  s37:'목화씨를 가져온 인물은 누구일까요?',
-  s38:'지도를 만든 인물은 누구일까요?',
-  s39:'과학 기술로 이름난 위인은 누구일까요?',
-  s40:'애국으로 기억되는 독립운동가는 누구일까요?',
+const missingCues: Record<string,string> = {
+  s31:'어린이날',
+  s32:'오죽헌',
+  s33:'만주 벌판',
+  s34:'알에서 나온',
+  s35:'만세 만세',
+  s36:'나라 구한',
+  s37:'목화씨는',
+  s38:'지도',
+  s39:'과학',
+  s40:'애국',
 }
 const songMissing: Question[] = missing.map(([id,masked,answer,hint,image])=>({
   id,category:'song',type:'missing',difficulty:hint.length>1?'보통':'쉬움',
-  question:`${missingClues[id]}\n이름 완성:  ${masked}`,options:[],answer,
+  question:`${missingCues[id]} ${masked}`,options:[],answer,
   explanation:`숨은 글자 ‘${Array.from(hint).join('·')}’을 넣으면 ${answer}이(가) 돼요.`,hint,image,final:id==='s40',
 }))
 
 const songClues: Question[] = [
-  {id:'s41',category:'song',type:'blank',difficulty:'보통',question:'떡방아 소리를 낸 □□□□',options:[],answer:'백결선생',explanation:'백결선생은 거문고로 방아 찧는 소리를 냈다는 이야기로 알려져 있어요.',hint:'이름에 ‘선생’이 들어가요.',image:'book'},
-  {id:'s42',category:'song',type:'blank',difficulty:'쉬움',question:'맞서 싸운 화랑 □□',options:[],answer:'관창',explanation:'관창은 황산벌에서 용감하게 싸운 신라의 화랑이에요.',hint:'두 글자 이름이에요.',image:'cards'},
-  {id:'s43',category:'song',type:'blank',difficulty:'보통',question:'천축국에 다녀온 승려 □□',options:[],answer:'혜초',explanation:'혜초는 여러 나라를 여행하고 《왕오천축국전》을 남겼어요.',hint:'두 글자 이름이에요.',image:'book'},
-  {id:'s44',category:'song',type:'blank',difficulty:'쉬움',question:'발해를 세운 □□□',options:[],answer:'대조영',explanation:'대조영은 고구려를 계승한 나라 발해를 세웠어요.',hint:'세 글자 이름이에요.',image:'crown'},
-  {id:'s45',category:'song',type:'blank',difficulty:'보통',question:'거란족과 담판한 □□',options:[],answer:'서희',explanation:'서희는 소손녕과 담판해 고려의 땅을 지키는 데 힘썼어요.',hint:'두 글자 이름이에요.',image:'book'},
+  {id:'s41',category:'song',type:'blank',difficulty:'보통',question:'떡방아 □□□□',options:[],answer:'백결선생',explanation:'백결선생은 거문고로 방아 찧는 소리를 냈다는 이야기로 알려져 있어요.',hint:'이름에 ‘선생’이 들어가요.',image:'book'},
+  {id:'s42',category:'song',type:'blank',difficulty:'쉬움',question:'맞서 싸운 □□',options:[],answer:'관창',explanation:'관창은 황산벌에서 용감하게 싸운 신라의 화랑이에요.',hint:'두 글자 이름이에요.',image:'cards'},
+  {id:'s43',category:'song',type:'blank',difficulty:'보통',question:'천축국 □□',options:[],answer:'혜초',explanation:'혜초는 여러 나라를 여행하고 《왕오천축국전》을 남겼어요.',hint:'두 글자 이름이에요.',image:'book'},
+  {id:'s44',category:'song',type:'blank',difficulty:'쉬움',question:'발해 □□□',options:[],answer:'대조영',explanation:'대조영은 고구려를 계승한 나라 발해를 세웠어요.',hint:'세 글자 이름이에요.',image:'crown'},
+  {id:'s45',category:'song',type:'blank',difficulty:'보통',question:'거란족 □□',options:[],answer:'서희',explanation:'서희는 소손녕과 담판해 고려의 땅을 지키는 데 힘썼어요.',hint:'두 글자 이름이에요.',image:'book'},
   {id:'s46',category:'song',type:'blank',difficulty:'보통',question:'□□□와 한명회',options:[],answer:'신숙주',explanation:'신숙주는 집현전 학자로 훈민정음 연구에 참여했어요.',hint:'세 글자 이름이에요.',image:'letters'},
   {id:'s47',category:'song',type:'blank',difficulty:'쉬움',question:'단원 풍속도 □□□',options:[],answer:'김홍도',explanation:'김홍도는 사람들이 생활하는 모습을 생생한 그림으로 남겼어요.',hint:'성을 포함해 세 글자예요.',image:'painting'},
   {id:'s48',category:'song',type:'blank',difficulty:'쉬움',question:'도산 □□□',options:[],answer:'안창호',explanation:'안창호는 우리나라의 독립과 교육을 위해 힘쓴 독립운동가예요.',hint:'세 글자 이름이에요.',image:'flag'},

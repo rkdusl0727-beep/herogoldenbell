@@ -31,7 +31,7 @@ const balancedChoiceIds = [
   'p01','p02','p04','p05','p07','p08','p10','p11','p13','p14','p16','p17','p19','p20','p22','p23',
   'h01','h02','h03','h04','h05','h06',
 ]
-const QUESTION_COPY_VERSION = '2026-11-02-embedded-initial-clues-v10'
+const QUESTION_COPY_VERSION = '2026-11-03-lyric-fragments-v11'
 
 function shuffle<T>(items:T[]) {
   const mixed=[...items]
@@ -87,19 +87,18 @@ function displayQuestion(q:Question, revealed:boolean) {
     return q.question.replace(/□(?:\s*□)*/g, revealed ? q.answer : blanks)
   }
   if (q.type === 'missing' && revealed) {
-    const marker = q.question.lastIndexOf('  ')
-    return marker >= 0 ? `${q.question.slice(0,marker+2)}${q.answer}` : q.answer
+    const answerLength=Array.from(q.answer.replace(/\s/g,'')).length
+    const parts=q.question.trim().split(/\s+/)
+    return `${parts.slice(0,-answerLength).join(' ')} ${q.answer}`.trim()
   }
-  if(q.type==='initial') return q.question.match(/초성:\s*([^\n]+)/)?.[1]?.trim() || q.question
+  if(q.type==='initial'&&/^[ㄱ-ㅎ\s]+$/.test(q.question.trim())) {
+    return defaultQuestions.find(item=>item.type==='initial'&&item.answer===q.answer)?.question || q.question
+  }
   return q.question
 }
 function questionClue(q:Question) {
-  if(q.clue?.trim()) return q.clue
-  if(q.type!=='initial') return ''
-  const embedded=q.question.split(/\n초성:/)[0]?.trim()
-  if(embedded&&embedded!==q.question) return embedded
-  return defaultQuestions.find(item=>item.type==='initial'&&item.answer===q.answer)?.clue
-    || '노래 가사에 나오는 이 위인은 누구일까요?'
+  if(q.type==='initial') return ''
+  return q.clue?.trim() || ''
 }
 function distributeAnswerPosition(q:Question) {
   if(q.type==='sequence') return {...q,options:shuffle(q.options)}
@@ -204,7 +203,7 @@ function App() {
   function speak() {
     if (!q || !settings.voice || !('speechSynthesis' in window)) { notify('이 기기에서는 음성 읽기를 사용할 수 없어요.'); return }
     window.speechSynthesis.cancel()
-    const spoken=q.type==='initial'?`${q.clue || '이 위인은 누구일까요?'} 초성 힌트를 보고 생각해 보세요.`:q.question.replace(/□(?:\s*□)*/g,'빈칸')
+    const spoken=q.type==='initial'?`${displayQuestion(q,false)}. 초성을 보고 생각해 보세요.`:q.question.replace(/□(?:\s*□)*/g,'빈칸')
     const u = new SpeechSynthesisUtterance(spoken)
     u.lang='ko-KR'; u.rate=settings.voiceRate
     const voices=window.speechSynthesis.getVoices(); u.voice=voices.find(v=>v.lang.toLowerCase().startsWith('ko')) || null
