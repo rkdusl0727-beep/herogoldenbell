@@ -31,7 +31,7 @@ const balancedChoiceIds = [
   'p01','p02','p04','p05','p07','p08','p10','p11','p13','p14','p16','p17','p19','p20','p22','p23',
   'h01','h02','h03','h04','h05','h06',
 ]
-const QUESTION_COPY_VERSION = '2026-11-02-initial-clues-v5'
+const QUESTION_COPY_VERSION = '2026-11-02-lyric-clues-v6'
 
 function shuffle<T>(items:T[]) {
   const mixed=[...items]
