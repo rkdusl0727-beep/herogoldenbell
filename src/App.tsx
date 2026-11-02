@@ -242,7 +242,7 @@ function App() {
   const hasSession=!!localStorage.getItem('goldenbell-session')
 
   if(screen==='home') return <div className="app home-screen">
-    <header className="brand-line"><span>어진반 위인 프로젝트</span><button className="icon-btn" onClick={()=>setScreen('settings')} aria-label="교사 설정"><SettingsIcon/></button></header>
+    <header className="brand-line"><button className="icon-btn" onClick={()=>setScreen('settings')} aria-label="교사 설정"><SettingsIcon/></button></header>
     <main className="hero">
       <div className="hero-copy"><div className="eyebrow"><Sparkles/> 함께 기억하고, 함께 도전해요</div><h1>우리나라<br/><em>위인 골든벨</em></h1><p>위인들의 이야기를 기억하고 골든벨을 울려요!</p></div>
       <div className="hero-bell"><div className="sunburst"/><img className="hero-quiz-image" src="./assets/goldenbell-quiz-hero.png" alt="황금 골든벨을 울리는 어린이들" /></div>
