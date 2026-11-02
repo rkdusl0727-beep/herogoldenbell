@@ -17,6 +17,7 @@ export interface Question {
   sequence?: string[]
   person?: string
   final?: boolean
+  verse?: 1 | 2 | 3 | 4 | 5
 }
 
 export type GameMode = 'practice' | 'challenge' | 'team' | 'cooperate'

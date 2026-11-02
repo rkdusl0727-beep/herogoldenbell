@@ -1,4 +1,5 @@
 import { defaultQuestions } from '../src/data/questions80.ts'
+import { prepareQueue } from '../src/utils/questionQueue.ts'
 
 const errors=[]
 const expect=(condition,message)=>{if(!condition)errors.push(message)}
@@ -21,8 +22,32 @@ const song=defaultQuestions.filter(q=>q.category==='song')
 const expectedSongTypes={blank:25,initial:15,missing:10}
 for(const [type,total] of Object.entries(expectedSongTypes)) expect(count(song,'type',type)===total,`노래 ${type} 문제는 ${total}개여야 합니다.`)
 expect(song.every(q=>Object.hasOwn(expectedSongTypes,q.type)),'노래 문제에 허용되지 않은 유형이 있습니다.')
-const initialCues={s16:'화포',s17:'죽림칠현',s18:'목민심서',s19:'일편단심',s20:'황금 보기를 돌같이',s21:'무단 정치',s22:'황희 정승',s23:'십만 양병',s24:'주리',s25:'오죽헌',s26:'나라 구한',s27:'삼 년 공부',s28:'지도',s29:'만세 만세',s30:'과학'}
+const initialCues={s16:'신라 장군',s17:'떡방아',s18:'황산벌의',s19:'말 목 자른',s20:'천축국',s21:'화포',s22:'황희 정승',s23:'오죽헌',s24:'몸 바쳐서',s25:'번쩍번쩍',s26:'단원 풍속도',s27:'지도',s28:'삼십삼인',s29:'장군의 아들',s30:'황소 그림'}
 for(const q of song.filter(q=>q.type==='initial')) expect(q.question===`${initialCues[q.id]} ${initialsOf(q.answer)}`&& !q.clue,`${q.id}: 가사 핵심어와 초성이 한 줄에 정확히 있어야 합니다.`)
+expect(song.every(q=>[1,2,3,4,5].includes(q.verse)), '모든 노래 문제에 1~5절 정보가 있어야 합니다.')
+for(const verse of [1,2,3,4,5]){
+  const verseQuestions=song.filter(q=>q.verse===verse)
+  expect(verseQuestions.length===10,`${verse}절 문제는 10개여야 합니다.`)
+  expect(count(verseQuestions,'type','blank')===5,`${verse}절 빈칸 문제는 5개여야 합니다.`)
+  expect(count(verseQuestions,'type','initial')===3,`${verse}절 초성 문제는 3개여야 합니다.`)
+  expect(count(verseQuestions,'type','missing')===2,`${verse}절 이름 완성 문제는 2개여야 합니다.`)
+}
+for(const type of [undefined,'blank','initial','missing']){
+  const pool=type?song.filter(q=>q.type===type):song
+  const counts=[1,2,3,4,5,7,10,15,20,Math.min(30,pool.length),pool.length]
+  for(const requested of new Set(counts)) for(let attempt=0;attempt<8;attempt++){
+    const queue=prepareQueue(pool,requested)
+    const verseCounts=[1,2,3,4,5].map(verse=>queue.filter(q=>q.verse===verse).length)
+    expect(queue.length===Math.min(requested,pool.length),`${type||'전체'} ${requested}문제 대기열 길이가 맞지 않습니다.`)
+    expect(new Set(queue.map(q=>q.id)).size===queue.length,`${type||'전체'} ${requested}문제 대기열에 중복 문제가 있습니다.`)
+    expect(Math.max(...verseCounts)-Math.min(...verseCounts)<=1,`${type||'전체'} ${requested}문제의 절별 분배가 고르지 않습니다. (${verseCounts.join('/')})`)
+    for(let end=1;end<=queue.length;end++){
+      const prefix=queue.slice(0,end)
+      const prefixCounts=[1,2,3,4,5].map(verse=>prefix.filter(q=>q.verse===verse).length)
+      expect(Math.max(...prefixCounts)-Math.min(...prefixCounts)<=1,`${type||'전체'} ${requested}문제의 ${end}번째까지 절 순환이 고르지 않습니다. (${prefixCounts.join('/')})`)
+    }
+  }
+}
 const bannedSongPhrases=['노래의','노래에서','이어지는','함께 나오는','다음 인물','이름 완성']
 expect(!song.some(q=>[q.question,q.clue].filter(Boolean).some(text=>bannedSongPhrases.some(phrase=>text.includes(phrase)))),'노래 문제에 설명형 메타 표현이 남아 있습니다.')
 expect(!song.some(q=>/[?？]|누구일까요|무엇일까요/.test(q.question)),'노래 문제는 질문문이 아니라 가사 핵심어와 빈칸·초성으로 표시해야 합니다.')

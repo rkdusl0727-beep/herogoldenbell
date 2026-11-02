@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { categoryNames, defaultQuestions, typeNames } from './data/questions80'
 import type { Category, GameMode, Question, QuestionType, Settings } from './types'
+import { prepareQueue, shuffle } from './utils/questionQueue'
 
 type Screen = 'home' | 'settings' | 'game' | 'editor' | 'finish'
 type SavedSession = { queueIds:string[]; index:number; scores:[number,number]; correct:number; settings:Settings }
@@ -31,54 +32,7 @@ const balancedChoiceIds = [
   'p01','p02','p04','p05','p07','p08','p10','p11','p13','p14','p16','p17','p19','p20','p22','p23',
   'h01','h02','h03','h04','h05','h06',
 ]
-const QUESTION_COPY_VERSION = '2026-11-03-lyric-fragments-v11'
-
-function shuffle<T>(items:T[]) {
-  const mixed=[...items]
-  for(let i=mixed.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1)); [mixed[i],mixed[j]]=[mixed[j],mixed[i]]
-  }
-  return mixed
-}
-function shuffleBalanced(items:Question[]) {
-  const buckets = new Map<Question['type'],Question[]>()
-  shuffle(items).forEach(question => {
-    const bucket=buckets.get(question.type) || []
-    bucket.push(question); buckets.set(question.type,bucket)
-  })
-  const result:Question[]=[]
-  let lastType:Question['type']|undefined
-  let lastCategory:Category|undefined
-  let lastPerson:string|undefined
-  let verbalStreak=0
-  const verbalCount=items.filter(isVerbal).length
-  const selectableCount=items.length-verbalCount
-  const maxVerbalStreak=selectableCount ? Math.max(1,Math.ceil(verbalCount/(selectableCount+1))) : verbalCount
-  while(result.length<items.length){
-    const available=[...buckets.entries()].filter(([,bucket])=>bucket.length)
-    const hasSelectable=available.some(([,bucket])=>!isVerbal(bucket[0]))
-    const answerBalanced=verbalStreak>=maxVerbalStreak && hasSelectable
-      ? available.filter(([,bucket])=>!isVerbal(bucket[0]))
-      : available
-    const differentType=answerBalanced.filter(([type])=>type!==lastType)
-    const candidates=differentType.length?differentType:answerBalanced
-    const largest=Math.max(...candidates.map(([,bucket])=>bucket.length))
-    const typeChoices=shuffle(candidates.filter(([,bucket])=>bucket.length===largest))
-    const [type,bucket]=typeChoices[0]
-    const varied=bucket.filter(question=>question.category!==lastCategory && (!question.person || question.person!==lastPerson))
-    const categoryVaried=bucket.filter(question=>question.category!==lastCategory)
-    const pickFrom=varied.length?varied:categoryVaried.length?categoryVaried:bucket
-    const picked=pickFrom[Math.floor(Math.random()*pickFrom.length)]
-    bucket.splice(bucket.indexOf(picked),1)
-    result.push(picked); lastType=type; lastCategory=picked.category; lastPerson=picked.person
-    verbalStreak=isVerbal(picked)?verbalStreak+1:0
-  }
-  return result
-}
-function prepareQueue(pool:Question[], count:number) {
-  const limit=Math.min(count,pool.length)
-  return shuffleBalanced(pool).slice(0,limit)
-}
+const QUESTION_COPY_VERSION = '2026-11-03-balanced-verses-v12'
 function modeName(mode:GameMode) { return ({practice:'연습 골든벨',challenge:'도전 골든벨',team:'팀 대항전',cooperate:'협동 골든벨'} as const)[mode] }
 function isVerbal(q:Question) { return ['blank','initial','missing'].includes(q.type) }
 function displayQuestion(q:Question, revealed:boolean) {
@@ -277,7 +231,7 @@ function App() {
     </header>
     {settings.scoreboard&&<Scoreboard mode={settings.mode} correct={correct} scores={scores} teamNames={settings.teamNames} />}
     <main className="question-stage">
-      <div className="question-meta"><span className={`cat cat-${q.category}`}>{categoryNames[q.category]}</span><span>{typeNames[q.type]}</span><span>{q.difficulty}</span>{settings.finals&&index>=queue.length-3&&<strong><Medal/> 결승 문제</strong>}</div>
+      <div className="question-meta"><span className={`cat cat-${q.category}`}>{categoryNames[q.category]}</span><span>{typeNames[q.type]}</span><span>{q.difficulty}</span>{q.verse&&<span>{q.verse}절</span>}{settings.finals&&index>=queue.length-3&&<strong><Medal/> 결승 문제</strong>}</div>
       <section className="question-card">
         <Art name={q.image} label={q.person || q.answer}/>
         <div className={`question-content type-${q.type}`}><p className="question-number">문제 {index+1}</p>{questionClue(q)&&<p className="question-clue">{questionClue(q)}</p>}{q.type==='initial'&&<span className="initial-label">초성 힌트</span>}<h2>{displayQuestion(q,revealed)}</h2>
@@ -368,7 +322,7 @@ function Editor({bank,setBank,onBack,notify,fileInput}:{bank:Question[];setBank:
   function importJson(file?:File){if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(String(reader.result));if(!Array.isArray(data)||data.some(q=>!q.id||!q.question||!q.answer||!q.category||!q.type))throw 0;setBank(data);notify(`${data.length}문제를 가져왔어요.`)}catch{notify('올바른 문제 JSON 파일이 아니에요.')}};reader.readAsText(file)}
   return <div className="panel-page editor-page"><header><button className="round-btn" onClick={onBack}><ArrowLeft/></button><div><small>오프라인 문제은행</small><h1>문제 편집</h1></div><div className="editor-actions"><input ref={fileInput} hidden type="file" accept="application/json" onChange={e=>importJson(e.target.files?.[0])}/><button className="soft-btn" onClick={()=>fileInput.current?.click()}><Upload/> JSON 가져오기</button><button className="soft-btn" onClick={exportJson}><Download/> 내보내기</button><button className="soft-btn" onClick={()=>{if(confirm('기본 80문제로 복원할까요?'))setBank(defaultQuestions)}}><RotateCcw/> 기본 복원</button></div></header>
     <div className="editor-toolbar"><div>{(['all','song','person','hangul'] as const).map(c=><button className={filter===c?'active':''} onClick={()=>setFilter(c)} key={c}>{c==='all'?`전체 ${bank.length}`:`${categoryNames[c]} ${bank.filter(v=>v.category===c).length}`}</button>)}</div><button className="primary-btn" onClick={()=>setEditing({id:`custom-${Date.now()}`,category:'person',type:'choice',difficulty:'쉬움',question:'',options:['','',''],answer:'',explanation:'',hint:'',image:'sparkles'})}><Plus/> 문제 추가</button></div>
-    <main className="question-table">{visible.map((q,i)=><article key={q.id}><span>{String(i+1).padStart(2,'0')}</span><div><div><b>{categoryNames[q.category]}</b><small>{typeNames[q.type]} · {q.difficulty}</small></div><h3>{q.clue?`${q.clue} · ${q.question}`:q.question}</h3><p>정답: <strong>{q.answer}</strong></p></div><button onClick={()=>setEditing(q)}><Edit3/></button><button className="danger" onClick={()=>{if(confirm('이 문제를 삭제할까요?'))setBank(bank.filter(v=>v.id!==q.id))}}><Trash2/></button></article>)}</main>
+    <main className="question-table">{visible.map((q,i)=><article key={q.id}><span>{String(i+1).padStart(2,'0')}</span><div><div><b>{categoryNames[q.category]}</b><small>{typeNames[q.type]} · {q.difficulty}{q.verse?` · ${q.verse}절`:''}</small></div><h3>{q.clue?`${q.clue} · ${q.question}`:q.question}</h3><p>정답: <strong>{q.answer}</strong></p></div><button onClick={()=>setEditing(q)}><Edit3/></button><button className="danger" onClick={()=>{if(confirm('이 문제를 삭제할까요?'))setBank(bank.filter(v=>v.id!==q.id))}}><Trash2/></button></article>)}</main>
     {editing&&<QuestionForm value={editing} onCancel={()=>setEditing(null)} onSave={save}/>} 
   </div>
 }
