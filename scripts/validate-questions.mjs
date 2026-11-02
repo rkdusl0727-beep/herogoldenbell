@@ -22,7 +22,8 @@ const expectedSongTypes={blank:25,initial:15,missing:10}
 for(const [type,total] of Object.entries(expectedSongTypes)) expect(count(song,'type',type)===total,`노래 ${type} 문제는 ${total}개여야 합니다.`)
 expect(song.every(q=>Object.hasOwn(expectedSongTypes,q.type)),'노래 문제에 허용되지 않은 유형이 있습니다.')
 expect(song.filter(q=>q.type==='initial').every(q=>q.clue?.includes('누구일까요?')),'초성 문제에는 인물과 업적을 연결하는 질문이 있어야 합니다.')
-expect(song.filter(q=>q.type!=='initial').every(q=>q.question.includes('노래')),'빈칸과 이름 완성 문제는 가사의 짧은 단서를 직접 사용해야 합니다.')
+const bannedSongPhrases=['노래의','노래에서','이어지는','함께 나오는']
+expect(!song.some(q=>[q.question,q.clue].filter(Boolean).some(text=>bannedSongPhrases.some(phrase=>text.includes(phrase)))),'노래 문제에 설명형 메타 표현이 남아 있습니다.')
 expect(!song.some(q=>q.question.includes('어려운 사람을 돕는 이야기')),'가사에 없는 홍길동 이야기 문제는 삭제해야 합니다.')
 expect(song.some(q=>q.answer==='정약용'&&q.clue?.includes('목민심서')),'정약용과 목민심서를 연결한 노래 문제가 필요합니다.')
 expect(!song.some(q=>[q.question,q.clue,q.explanation].filter(Boolean).some(text=>text.includes('노래 속')||text.includes('노래에서는'))),'노래 문제에 반복적인 “노래 속” 표현이 남아 있습니다.')
