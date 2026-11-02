@@ -12,6 +12,7 @@ export interface Question {
   answer: string
   explanation: string
   hint: string
+  clue?: string
   image: string
   sequence?: string[]
   person?: string

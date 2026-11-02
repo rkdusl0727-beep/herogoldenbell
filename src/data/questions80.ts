@@ -1,7 +1,7 @@
 import type { Question } from '../types'
 
 const songBlank: Question[] = [
-  {id:'s01',category:'song',type:'blank',difficulty:'쉬움',question:'우리나라를 처음 세웠다고 전해지는 □□',options:[],answer:'단군',explanation:'노래의 첫 인물은 단군이에요.',hint:'우리나라를 처음 세웠다고 전해져요.',image:'mountain'},
+  {id:'s01',category:'song',type:'blank',difficulty:'쉬움',question:'우리나라를 처음 세웠다고 전해지는 □□',options:[],answer:'단군',explanation:'단군은 우리나라를 처음 세웠다고 전해지는 인물이에요.',hint:'우리나라를 처음 세웠다고 전해져요.',image:'mountain'},
   {id:'s02',category:'song',type:'blank',difficulty:'쉬움',question:'고구려를 세운 왕 □□□',options:[],answer:'동명왕',explanation:'동명왕은 고구려를 세운 왕이에요.',hint:'고구려와 관련된 왕이에요.',image:'crown'},
   {id:'s03',category:'song',type:'blank',difficulty:'쉬움',question:'백제를 세운 왕 □□□',options:[],answer:'온조왕',explanation:'온조왕은 백제를 세운 왕이에요.',hint:'백제와 관련된 왕이에요.',image:'crown'},
   {id:'s04',category:'song',type:'blank',difficulty:'보통',question:'알에서 태어났다고 전해지는 □□□□',options:[],answer:'박혁거세',explanation:'박혁거세는 알에서 태어났다고 전해지며 신라를 세운 왕이에요.',hint:'신라를 세운 왕이에요.',image:'egg'},
@@ -14,20 +14,30 @@ const songBlank: Question[] = [
   {id:'s11',category:'song',type:'blank',difficulty:'보통',question:'귀주대첩을 이끈 장군 □□□',options:[],answer:'강감찬',explanation:'강감찬은 귀주대첩을 승리로 이끈 장군이에요.',hint:'고려의 장군이에요.',image:'cards'},
   {id:'s12',category:'song',type:'blank',difficulty:'쉬움',question:'목화씨를 가져온 □□□',options:[],answer:'문익점',explanation:'문익점은 우리나라에 목화 재배가 퍼지는 데 기여했어요.',hint:'하얀 솜과 관련 있어요.',image:'cotton'},
   {id:'s13',category:'song',type:'blank',difficulty:'쉬움',question:'과학 기구를 만든 □□□',options:[],answer:'장영실',explanation:'장영실은 여러 과학 기구 제작에 참여한 과학 기술자예요.',hint:'해시계와 물시계로 기억해요.',image:'sundial'},
-  {id:'s14',category:'song',type:'blank',difficulty:'쉬움',question:'어려운 사람을 돕는 이야기 속 □□□',options:[],answer:'홍길동',explanation:'홍길동은 어려운 사람을 돕는 이야기 속 인물이에요.',hint:'허균의 소설에 나와요.',image:'sparkles'},
+  {id:'s14',category:'song',type:'blank',difficulty:'쉬움',question:'허균의 소설에서 어려운 사람을 돕는 □□□',options:[],answer:'홍길동',explanation:'홍길동은 허균의 소설에서 어려운 사람을 돕는 인물이에요.',hint:'허균의 소설에 나와요.',image:'sparkles'},
   {id:'s15',category:'song',type:'blank',difficulty:'쉬움',question:'어린이날과 관련된 □□□',options:[],answer:'방정환',explanation:'방정환은 어린이를 소중히 여기고 어린이날을 만드는 데 힘썼어요.',hint:'어린이를 위한 글을 썼어요.',image:'children'},
 ]
 
-const initials: [string,string,string,string][] = [
-  ['s16','ㅊㅁㅅ','최무선','sparkles'],['s17','ㄱㅂㅅ','김부식','book'],['s18','ㅈㄴ','지눌','book'],
-  ['s19','ㅈㅁㅈ','정몽주','book'],['s20','ㅊㅇ','최영','cards'],['s21','ㅎㅎ','황희','book'],
-  ['s22','ㅁㅅㅅ','맹사성','book'],['s23','ㅇㅇㄱ','이율곡','book'],['s24','ㅇㅌㄱ','이퇴계','book'],
-  ['s25','ㅅㅅㅇㄷ','신사임당','painting'],['s26','ㅇㅅㅅ','이순신','turtle-ship'],['s27','ㅎㅅㅂ','한석봉','letters'],
-  ['s28','ㄱㅈㅎ','김정호','map'],['s29','ㅇㄱㅅ','유관순','flag'],['s30','ㅈㅇㅅ','장영실','sundial'],
+const initials: [string,string,string,string,string,string][] = [
+  ['s16','ㅊㅁㅅ','최무선','sparkles','화포를 만들어 왜구를 물리치는 데 힘쓴 이 위인은 누구일까요?','최무선은 화포를 만드는 기술을 발전시켜 나라를 지키는 데 힘썼어요.'],
+  ['s17','ㄱㅂㅅ','김부식','book','우리 역사를 담은 《삼국사기》를 지은 이 위인은 누구일까요?','김부식은 고구려·백제·신라의 역사를 담은 《삼국사기》를 지었어요.'],
+  ['s18','ㅈㅇㅇ','정약용','book','백성을 잘 돌보는 방법을 담은 《목민심서》를 지은 이 위인은 누구일까요?','정약용은 백성을 생각하는 마음을 담아 《목민심서》를 지었어요.'],
+  ['s19','ㅈㅁㅈ','정몽주','book','고려를 향한 한결같은 마음을 「단심가」에 담은 이 위인은 누구일까요?','정몽주는 고려를 향한 충성스러운 마음을 「단심가」에 담았어요.'],
+  ['s20','ㅊㅇ','최영','cards','“황금 보기를 돌같이 하라”는 말로 알려진 고려 장군은 누구일까요?','최영은 나라를 지킨 고려의 장군으로 알려져 있어요.'],
+  ['s21','ㅎㅎ','황희','book','오랫동안 조선의 재상으로 일하며 나라를 도운 이 위인은 누구일까요?','황희는 지혜로운 조선의 재상으로 오랫동안 나라의 일을 도왔어요.'],
+  ['s22','ㅁㅅㅅ','맹사성','book','검소한 생활을 한 조선의 재상은 누구일까요?','맹사성은 높은 벼슬을 하면서도 검소하게 생활한 재상으로 알려져 있어요.'],
+  ['s23','ㅇㅇㄱ','이율곡','book','조선 시대의 학자로 오천 원권에도 그려진 이 위인은 누구일까요?','이율곡은 조선 시대의 학자로 학문과 나라의 일을 깊이 생각했어요.'],
+  ['s24','ㅇㅌㄱ','이퇴계','book','도산서원에서 학문을 가르친 조선의 학자는 누구일까요?','이퇴계는 도산서원에서 제자들을 가르친 조선의 학자예요.'],
+  ['s25','ㅅㅅㅇㄷ','신사임당','painting','풀과 곤충을 섬세하게 그린 「초충도」로 알려진 화가는 누구일까요?','신사임당은 풀과 곤충을 자세히 관찰해 「초충도」를 그린 화가예요.'],
+  ['s26','ㅇㅅㅅ','이순신','turtle-ship','거북선과 지혜로운 전술로 바다를 지킨 장군은 누구일까요?','이순신은 거북선과 뛰어난 전술로 바다에서 나라를 지킨 장군이에요.'],
+  ['s27','ㅎㅅㅂ','한석봉','letters','어릴 때부터 꾸준히 연습해 글씨로 이름난 이 위인은 누구일까요?','한석봉은 꾸준히 연습해 뛰어난 글씨로 이름난 인물이에요.'],
+  ['s28','ㄱㅈㅎ','김정호','map','우리나라의 모습을 자세히 담은 대동여지도를 만든 사람은 누구일까요?','김정호는 우리 땅을 자세히 담은 대동여지도를 만들었어요.'],
+  ['s29','ㅇㄱㅅ','유관순','flag','태극기를 들고 3·1운동에 참여한 독립운동가는 누구일까요?','유관순은 태극기를 들고 독립 만세를 외친 독립운동가예요.'],
+  ['s30','ㅈㅇㅅ','장영실','sundial','앙부일구와 자격루 같은 과학 기구를 만든 사람은 누구일까요?','장영실은 시간을 알려 주는 앙부일구와 자격루 제작에 참여했어요.'],
 ]
-const songInitial: Question[] = initials.map(([id,question,answer,image])=>({
+const songInitial: Question[] = initials.map(([id,question,answer,image,clue,explanation])=>({
   id,category:'song',type:'initial',difficulty:question.length>4?'보통':'쉬움',question,options:[],answer,
-  explanation:`${question}은(는) ${answer}의 초성이에요.`,hint:answer,image,final:id==='s26',
+  explanation,hint:answer,clue,image,final:id==='s26',
 }))
 
 const missing: [string,string,string,string,string][] = [
@@ -37,9 +47,21 @@ const missing: [string,string,string,string,string][] = [
   ['s37','문 □ 점','문익점','익','cotton'],['s38','김 □ 호','김정호','정','map'],
   ['s39','장 □ 실','장영실','영','sundial'],['s40','안 □ 근','안중근','중','flag'],
 ]
+const missingClues: Record<string,string> = {
+  s31:'어린이날을 만드는 데 힘쓴 위인은 누구일까요?',
+  s32:'풀과 곤충을 그린 「초충도」로 알려진 화가는 누구일까요?',
+  s33:'고구려의 영토를 크게 넓힌 왕은 누구일까요?',
+  s34:'알에서 태어났다고 전해지며 신라를 세운 왕은 누구일까요?',
+  s35:'태극기를 들고 독립 만세를 외친 인물은 누구일까요?',
+  s36:'거북선과 뛰어난 전술로 바다를 지킨 장군은 누구일까요?',
+  s37:'목화씨를 가져와 따뜻한 무명옷을 만들 수 있게 도운 인물은 누구일까요?',
+  s38:'대동여지도를 만든 지도 제작자는 누구일까요?',
+  s39:'앙부일구와 자격루 제작에 참여한 과학 기술자는 누구일까요?',
+  s40:'나라의 독립을 위해 용기 있게 행동한 의사는 누구일까요?',
+}
 const songMissing: Question[] = missing.map(([id,masked,answer,hint,image])=>({
   id,category:'song',type:'missing',difficulty:hint.length>1?'보통':'쉬움',
-  question:`사라진 글자를 넣어 이름을 완성해 보세요.  ${masked}`,options:[],answer,
+  question:`${missingClues[id]}\n이름 완성:  ${masked}`,options:[],answer,
   explanation:`숨은 글자 ‘${Array.from(hint).join('·')}’을 넣으면 ${answer}이(가) 돼요.`,hint,image,final:id==='s40',
 }))
 
@@ -56,8 +78,8 @@ const sequences: [string,string[],string,string][] = [
   ['s50',['유관순','안창호','방정환'],'독립 만세를 외친 인물이 먼저예요.','쉬움'],
 ]
 const songSequence: Question[] = sequences.map(([id,sequence,hint,difficulty])=>({
-  id,category:'song',type:'sequence',difficulty:difficulty as Question['difficulty'],question:'노래에 나오는 순서대로 인물 카드를 눌러 보세요.',
-  options:[...sequence].reverse(),answer:sequence.join(' → '),explanation:`노래에서는 ${sequence.join(', ')} 순서로 등장해요.`,
+  id,category:'song',type:'sequence',difficulty:difficulty as Question['difficulty'],question:'가사에 등장하는 순서대로 인물 카드를 눌러 보세요.',
+  options:[...sequence].reverse(),answer:sequence.join(' → '),explanation:`정답 순서는 ${sequence.join(', ')}예요.`,
   hint,image:'cards',sequence,final:id==='s50',
 }))
 

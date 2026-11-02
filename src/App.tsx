@@ -31,7 +31,7 @@ const balancedChoiceIds = [
   'p01','p02','p04','p05','p07','p08','p10','p11','p13','p14','p16','p17','p19','p20','p22','p23',
   'h01','h02','h03','h04','h05','h06',
 ]
-const QUESTION_COPY_VERSION = '2026-11-02-final-80-v2'
+const QUESTION_COPY_VERSION = '2026-11-02-song-clues-v3'
 
 function shuffle<T>(items:T[]) {
   const mixed=[...items]
@@ -75,15 +75,9 @@ function shuffleBalanced(items:Question[]) {
   }
   return result
 }
-function prepareQueue(pool:Question[], count:number, random:boolean, includeFinals:boolean) {
+function prepareQueue(pool:Question[], count:number) {
   const limit=Math.min(count,pool.length)
-  if(!includeFinals || limit<3) return (random?shuffleBalanced(pool):[...pool]).slice(0,limit)
-  const finals=pool.filter(question=>question.final).slice(0,3)
-  const finalIds=new Set(finals.map(question=>question.id))
-  const regularPool=pool.filter(question=>!finalIds.has(question.id))
-  const regular=(random?shuffleBalanced(regularPool):regularPool).slice(0,Math.max(0,limit-finals.length))
-  const orderedFinals=random?shuffleBalanced(finals):finals
-  return [...regular,...orderedFinals]
+  return shuffleBalanced(pool).slice(0,limit)
 }
 function modeName(mode:GameMode) { return ({practice:'연습 골든벨',challenge:'도전 골든벨',team:'팀 대항전',cooperate:'협동 골든벨'} as const)[mode] }
 function isVerbal(q:Question) { return ['blank','initial','missing'].includes(q.type) }
@@ -152,7 +146,7 @@ function App() {
     }
   })
   const [settings,setSettings] = useState<Settings>(() => {
-    try { return {...DEFAULT_SETTINGS,...JSON.parse(localStorage.getItem('goldenbell-settings') || '{}')} } catch { return DEFAULT_SETTINGS }
+    try { return {...DEFAULT_SETTINGS,...JSON.parse(localStorage.getItem('goldenbell-settings') || '{}'),random:true} } catch { return DEFAULT_SETTINGS }
   })
   const [queue,setQueue] = useState<Question[]>([])
   const [index,setIndex] = useState(0)
@@ -201,7 +195,7 @@ function App() {
   function speak() {
     if (!q || !settings.voice || !('speechSynthesis' in window)) { notify('이 기기에서는 음성 읽기를 사용할 수 없어요.'); return }
     window.speechSynthesis.cancel()
-    const spoken=q.type==='initial'?'초성을 보고 위인 이름을 말해 보세요.':q.question.replace(/□(?:\s*□)*/g,'빈칸')
+    const spoken=q.type==='initial'?`${q.clue || '이 위인은 누구일까요?'} 초성 힌트를 보고 생각해 보세요.`:q.question.replace(/□(?:\s*□)*/g,'빈칸')
     const u = new SpeechSynthesisUtterance(spoken)
     u.lang='ko-KR'; u.rate=settings.voiceRate
     const voices=window.speechSynthesis.getVoices(); u.voice=voices.find(v=>v.lang.toLowerCase().startsWith('ko')) || null
@@ -218,9 +212,9 @@ function App() {
   }
   function startGame(next=settings) {
     const pool=bank.filter(v=>next.categories.includes(v.category)&&next.questionTypes.includes(v.type)&&!next.excludedQuestionIds.includes(v.id)).map(distributeAnswerPosition); const n=Math.min(next.count,pool.length)
-    const result=prepareQueue(pool,n,next.random,next.finals)
+    const result=prepareQueue(pool,n)
     if(!result.length){notify('출제할 문제를 하나 이상 선택해 주세요.');return}
-    setSettings({...next,count:n}); setQueue(result); setIndex(0); setScores([0,0]); setCorrect(0); setAwarded({}); resetQuestion(); setScreen('game')
+    setSettings({...next,count:n,random:true}); setQueue(result); setIndex(0); setScores([0,0]); setCorrect(0); setAwarded({}); resetQuestion(); setScreen('game')
   }
   function continueGame(){
     try { const s:SavedSession=JSON.parse(localStorage.getItem('goldenbell-session')||''); const restored=s.queueIds.map(id=>bank.find(q=>q.id===id)).filter(Boolean) as Question[]; if(!restored.length) throw 0; setQueue(restored);setIndex(Math.min(s.index,restored.length-1));setScores(s.scores);setCorrect(s.correct);setSettings(s.settings);resetQuestion();setScreen('game') } catch { notify('이어할 게임이 없어요.') }
@@ -278,7 +272,7 @@ function App() {
       <div className="question-meta"><span className={`cat cat-${q.category}`}>{categoryNames[q.category]}</span><span>{typeNames[q.type]}</span><span>{q.difficulty}</span>{settings.finals&&index>=queue.length-3&&<strong><Medal/> 결승 문제</strong>}</div>
       <section className="question-card">
         <Art name={q.image} label={q.person || q.answer}/>
-        <div className={`question-content type-${q.type}`}><p className="question-number">문제 {index+1}</p><h2>{displayQuestion(q,revealed)}</h2>
+        <div className={`question-content type-${q.type}`}><p className="question-number">문제 {index+1}</p>{q.clue&&<p className="question-clue">{q.clue}</p>}<h2>{displayQuestion(q,revealed)}</h2>
           {hintStep>0&&!revealed&&<div className="hint-box"><HelpCircle/> 힌트 {hintStep}: {hintText(q,hintStep)}</div>}
           {q.type==='sequence'&&<div className="sequence-picked">{selected.length?selected.map((v,i)=><span key={v}>{i+1}. {v}</span>):<small>아래 카드를 순서대로 눌러 주세요</small>}</div>}
           {!isVerbal(q)&&<div className={`options ${q.type==='ox'?'ox-options':''}`}>{q.options.map((o,i)=><button key={o} onClick={()=>choose(o)} className={`${selected.includes(o)?'selected':''} ${revealed&&o===q.answer?'answer':''} ${revealed&&selected.includes(o)&&o!==q.answer?'wrong':''}`}><span>{q.type==='ox'?o:String.fromCharCode(65+i)}</span>{q.type==='ox'?'':o}</button>)}</div>}
@@ -346,11 +340,11 @@ function SettingsPanel({settings,setSettings,bank,available,onBack,onEditor,onSt
 
       <section className="setting-card manual-picker"><details><summary><span><b>4. 출제할 문제 직접 체크</b><small>현재 조건 {matching.length}개 중 {available}개 선택</small></span><ArrowRight/></summary>
         <div className="manual-actions"><button onClick={()=>setMatching(true)}>현재 조건 모두 선택</button><button onClick={()=>setMatching(false)}>현재 조건 모두 해제</button></div>
-        <div className="manual-list">{matching.map((question,index)=><label key={question.id}><input type="checkbox" checked={!settings.excludedQuestionIds.includes(question.id)} onChange={()=>toggleQuestion(question.id)}/><span><b>{String(index+1).padStart(2,'0')}</b><em>{typeNames[question.type]}</em>{question.question}</span></label>)}</div>
+        <div className="manual-list">{matching.map((question,index)=><label key={question.id}><input type="checkbox" checked={!settings.excludedQuestionIds.includes(question.id)} onChange={()=>toggleQuestion(question.id)}/><span><b>{String(index+1).padStart(2,'0')}</b><em>{typeNames[question.type]}</em>{question.clue?`${question.clue} · ${question.question}`:question.question}</span></label>)}</div>
       </details></section>
 
       <section className="setting-card"><h2>5. 수업 도구</h2><div className="switch-list">
-        <Switch label="문제 순서 랜덤" value={settings.random} onChange={v=>setSettings({...settings,random:v})}/><Switch label="힌트 사용" value={settings.hints} onChange={v=>setSettings({...settings,hints:v})}/><Switch label="한국어 음성" value={settings.voice} onChange={v=>setSettings({...settings,voice:v})}/><Switch label="효과음" value={settings.sound} onChange={v=>setSettings({...settings,sound:v})}/><Switch label="점수판 표시" value={settings.scoreboard} onChange={v=>setSettings({...settings,scoreboard:v})}/><Switch label="선택 후 자동 공개" value={settings.autoReveal} onChange={v=>setSettings({...settings,autoReveal:v})}/><Switch label="마지막 3문제 결승" value={settings.finals} onChange={v=>setSettings({...settings,finals:v})}/>
+        <div className="random-status"><span>문제 순서</span><b>항상 무작위</b></div><Switch label="힌트 사용" value={settings.hints} onChange={v=>setSettings({...settings,hints:v})}/><Switch label="한국어 음성" value={settings.voice} onChange={v=>setSettings({...settings,voice:v})}/><Switch label="효과음" value={settings.sound} onChange={v=>setSettings({...settings,sound:v})}/><Switch label="점수판 표시" value={settings.scoreboard} onChange={v=>setSettings({...settings,scoreboard:v})}/><Switch label="선택 후 자동 공개" value={settings.autoReveal} onChange={v=>setSettings({...settings,autoReveal:v})}/><Switch label="마지막 3문제 결승" value={settings.finals} onChange={v=>setSettings({...settings,finals:v})}/>
       </div><div className="rate-row"><label>읽기 속도 <b>{settings.voiceRate.toFixed(1)}×</b></label><input type="range" min="0.6" max="1.2" step="0.1" value={settings.voiceRate} onChange={e=>setSettings({...settings,voiceRate:Number(e.target.value)})}/></div></section>
     </main><div className="panel-footer"><button className="reset-btn" onClick={()=>setSettings(DEFAULT_SETTINGS)}><RotateCcw/> 기본값</button><div><span>출제 가능 {available}문제</span><button className="primary-btn" onClick={onStart} disabled={!available}>이 설정으로 시작 <ArrowRight/></button></div></div>
   </div>
@@ -366,7 +360,7 @@ function Editor({bank,setBank,onBack,notify,fileInput}:{bank:Question[];setBank:
   function importJson(file?:File){if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(String(reader.result));if(!Array.isArray(data)||data.some(q=>!q.id||!q.question||!q.answer||!q.category||!q.type))throw 0;setBank(data);notify(`${data.length}문제를 가져왔어요.`)}catch{notify('올바른 문제 JSON 파일이 아니에요.')}};reader.readAsText(file)}
   return <div className="panel-page editor-page"><header><button className="round-btn" onClick={onBack}><ArrowLeft/></button><div><small>오프라인 문제은행</small><h1>문제 편집</h1></div><div className="editor-actions"><input ref={fileInput} hidden type="file" accept="application/json" onChange={e=>importJson(e.target.files?.[0])}/><button className="soft-btn" onClick={()=>fileInput.current?.click()}><Upload/> JSON 가져오기</button><button className="soft-btn" onClick={exportJson}><Download/> 내보내기</button><button className="soft-btn" onClick={()=>{if(confirm('기본 80문제로 복원할까요?'))setBank(defaultQuestions)}}><RotateCcw/> 기본 복원</button></div></header>
     <div className="editor-toolbar"><div>{(['all','song','person','hangul'] as const).map(c=><button className={filter===c?'active':''} onClick={()=>setFilter(c)} key={c}>{c==='all'?`전체 ${bank.length}`:`${categoryNames[c]} ${bank.filter(v=>v.category===c).length}`}</button>)}</div><button className="primary-btn" onClick={()=>setEditing({id:`custom-${Date.now()}`,category:'person',type:'choice',difficulty:'쉬움',question:'',options:['','',''],answer:'',explanation:'',hint:'',image:'sparkles'})}><Plus/> 문제 추가</button></div>
-    <main className="question-table">{visible.map((q,i)=><article key={q.id}><span>{String(i+1).padStart(2,'0')}</span><div><div><b>{categoryNames[q.category]}</b><small>{typeNames[q.type]} · {q.difficulty}</small></div><h3>{q.question}</h3><p>정답: <strong>{q.answer}</strong></p></div><button onClick={()=>setEditing(q)}><Edit3/></button><button className="danger" onClick={()=>{if(confirm('이 문제를 삭제할까요?'))setBank(bank.filter(v=>v.id!==q.id))}}><Trash2/></button></article>)}</main>
+    <main className="question-table">{visible.map((q,i)=><article key={q.id}><span>{String(i+1).padStart(2,'0')}</span><div><div><b>{categoryNames[q.category]}</b><small>{typeNames[q.type]} · {q.difficulty}</small></div><h3>{q.clue?`${q.clue} · ${q.question}`:q.question}</h3><p>정답: <strong>{q.answer}</strong></p></div><button onClick={()=>setEditing(q)}><Edit3/></button><button className="danger" onClick={()=>{if(confirm('이 문제를 삭제할까요?'))setBank(bank.filter(v=>v.id!==q.id))}}><Trash2/></button></article>)}</main>
     {editing&&<QuestionForm value={editing} onCancel={()=>setEditing(null)} onSave={save}/>} 
   </div>
 }
@@ -376,7 +370,7 @@ function QuestionForm({value,onCancel,onSave}:{value:Question;onCancel:()=>void;
   function image(file?:File){if(!file)return; if(file.size>700000){alert('이미지는 700KB보다 작게 준비해 주세요.');return}const r=new FileReader();r.onload=()=>setQ({...q,image:String(r.result)});r.readAsDataURL(file)}
   return <div className="modal-backdrop"><form className="question-form" onSubmit={e=>{e.preventDefault();onSave(q)}}><header><div><small>{value.question?'문제 수정':'새 문제'}</small><h2>문제 정보</h2></div><button type="button" onClick={onCancel}><X/></button></header><div className="form-grid">
     <label>ID<input value={q.id} onChange={e=>setQ({...q,id:e.target.value})}/></label><label>주제<select value={q.category} onChange={e=>setQ({...q,category:e.target.value as Category})}><option value="song">노래 기억</option><option value="person">우리나라 위인</option><option value="hangul">한글 심화</option></select></label><label>유형<select value={q.type} onChange={e=>setQ({...q,type:e.target.value as Question['type']})}>{Object.entries(typeNames).map(([k,v])=><option value={k} key={k}>{v}</option>)}</select></label><label>난이도<select value={q.difficulty} onChange={e=>setQ({...q,difficulty:e.target.value as Question['difficulty']})}><option>쉬움</option><option>보통</option><option>도전</option></select></label>
-    <label className="wide">질문<textarea value={q.question} onChange={e=>setQ({...q,question:e.target.value})}/></label><label className="wide">보기 (쉼표로 구분)<input value={q.options.join(', ')} onChange={e=>setQ({...q,options:e.target.value.split(',').map(v=>v.trim())})}/></label><label>정답<input value={q.answer} onChange={e=>setQ({...q,answer:e.target.value})}/></label><label>위인 이름<input value={q.person||''} onChange={e=>setQ({...q,person:e.target.value})}/></label><label className="wide">힌트<input value={q.hint} onChange={e=>setQ({...q,hint:e.target.value})}/></label><label className="wide">해설<textarea value={q.explanation} onChange={e=>setQ({...q,explanation:e.target.value})}/></label><label className="wide">이미지<input ref={imageRef} type="file" accept="image/*" onChange={e=>image(e.target.files?.[0])}/><small>또는 기본 상징 이름: {q.image}</small></label>
+    <label className="wide">질문<textarea value={q.question} onChange={e=>setQ({...q,question:e.target.value})}/></label><label className="wide">추가 단서 문장<input value={q.clue||''} onChange={e=>setQ({...q,clue:e.target.value})}/></label><label className="wide">보기 (쉼표로 구분)<input value={q.options.join(', ')} onChange={e=>setQ({...q,options:e.target.value.split(',').map(v=>v.trim())})}/></label><label>정답<input value={q.answer} onChange={e=>setQ({...q,answer:e.target.value})}/></label><label>위인 이름<input value={q.person||''} onChange={e=>setQ({...q,person:e.target.value})}/></label><label className="wide">힌트<input value={q.hint} onChange={e=>setQ({...q,hint:e.target.value})}/></label><label className="wide">해설<textarea value={q.explanation} onChange={e=>setQ({...q,explanation:e.target.value})}/></label><label className="wide">이미지<input ref={imageRef} type="file" accept="image/*" onChange={e=>image(e.target.files?.[0])}/><small>또는 기본 상징 이름: {q.image}</small></label>
   </div><footer><button type="button" className="soft-btn" onClick={onCancel}>취소</button><button className="primary-btn"><Check/> 저장</button></footer></form></div>
 }
 
