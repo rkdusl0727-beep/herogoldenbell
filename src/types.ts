@@ -23,6 +23,8 @@ export type GameMode = 'practice' | 'challenge' | 'team' | 'cooperate'
 export interface Settings {
   mode: GameMode
   categories: Category[]
+  questionTypes: QuestionType[]
+  excludedQuestionIds: string[]
   count: number
   random: boolean
   hints: boolean

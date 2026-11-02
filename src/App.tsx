@@ -4,14 +4,14 @@ import {
   FileUp, HelpCircle, Home, Medal, Pause, Play, Plus, RotateCcw, Settings as SettingsIcon,
   Sparkles, Trash2, Upload, Volume2, VolumeX, X,
 } from 'lucide-react'
-import { categoryNames, defaultQuestions, typeNames } from './data/questions'
-import type { Category, GameMode, Question, Settings } from './types'
+import { categoryNames, defaultQuestions, typeNames } from './data/questions80'
+import type { Category, GameMode, Question, QuestionType, Settings } from './types'
 
 type Screen = 'home' | 'settings' | 'game' | 'editor' | 'finish'
 type SavedSession = { queueIds:string[]; index:number; scores:[number,number]; correct:number; settings:Settings }
 
 const DEFAULT_SETTINGS: Settings = {
-  mode:'practice', categories:['song','person','hangul'], count:20, random:false,
+  mode:'practice', categories:['song','person','hangul'], questionTypes:['blank','initial','missing','sequence','choice','ox'], excludedQuestionIds:[], count:20, random:true,
   hints:true, voice:true, voiceRate:.9, sound:true, scoreboard:true, autoReveal:false,
   finals:true, teamNames:['햇살팀','별빛팀'],
 }
@@ -28,11 +28,10 @@ const portraitById: Record<string,string> = {
   p19:'./assets/people/jang-yeong-sil.png', p22:'./assets/people/mun-ik-jeom.png',
 }
 const balancedChoiceIds = [
-  'p01','p02','p03','p04','p05','p07','p08','p09','p10','p11','p12','p13','p14',
-  'p16','p17','p18','p19','p20','p21','p22','p23','p24','h01','h02','h03','h04',
+  'p01','p02','p04','p05','p07','p08','p10','p11','p13','p14','p16','p17','p19','p20','p22','p23',
+  'h01','h02','h03','h04','h05','h06',
 ]
-const QUESTION_COPY_VERSION = '2026-11-02-natural-questions-v1'
-const refreshedQuestionIds = new Set(['s01','s02','s03','s04','s05','s06'])
+const QUESTION_COPY_VERSION = '2026-11-02-final-80-v2'
 
 function shuffle<T>(items:T[]) {
   const mixed=[...items]
@@ -100,6 +99,7 @@ function displayQuestion(q:Question, revealed:boolean) {
   return q.question
 }
 function distributeAnswerPosition(q:Question) {
+  if(q.type==='sequence') return {...q,options:shuffle(q.options)}
   if(q.type!=='choice' || q.options.length<3 || !q.options.includes(q.answer)) return q
   const knownIndex=balancedChoiceIds.indexOf(q.id)
   const number=Number(q.id.replace(/\D/g,'')) || 1
@@ -108,6 +108,19 @@ function distributeAnswerPosition(q:Question) {
   const options=[...distractors]
   options.splice(target,0,q.answer)
   return {...q,options}
+}
+function hintLimit(q:Question) {
+  if(q.type==='initial') return Math.max(1,Array.from(q.answer.replace(/\s/g,'')).length)
+  if(q.type==='missing') return Math.max(1,Array.from(q.hint).length)
+  return 2
+}
+function hintText(q:Question,step:number) {
+  if(q.type==='initial') return Array.from(q.answer).map((char,index)=>char===' '?' ':index<step?char:'○').join('')
+  if(q.type==='missing') return `숨은 글자: ${Array.from(q.hint).slice(0,step).join(' · ')}`
+  return q.hint
+}
+function AnimatedAnswer({answer}:{answer:string}) {
+  return <b className="answer-letters">{Array.from(answer).map((letter,index)=><i key={`${letter}-${index}`} style={{animationDelay:`${index*.07}s`}}>{letter===' '?'\u00a0':letter}</i>)}</b>
 }
 
 function Bell({small=false, ringing=false}:{small?:boolean;ringing?:boolean}) {
@@ -129,13 +142,7 @@ function App() {
     try {
       let saved:Question[] = JSON.parse(localStorage.getItem('goldenbell-bank') || '') || defaultQuestions
       if(localStorage.getItem('goldenbell-copy-version')!==QUESTION_COPY_VERSION){
-        const defaultsById=new Map(defaultQuestions.map(question=>[question.id,question]))
-        saved=saved.map(question=>{
-          const updated=defaultsById.get(question.id)
-          return updated&&refreshedQuestionIds.has(question.id)
-            ? {...question,question:updated.question,explanation:updated.explanation,hint:updated.hint}
-            : question
-        })
+        saved=defaultQuestions
         localStorage.setItem('goldenbell-copy-version',QUESTION_COPY_VERSION)
       }
       return saved.map(q => portraitById[q.id] ? {...q,image:portraitById[q.id]} : q)
@@ -160,7 +167,12 @@ function App() {
   const [toast,setToast] = useState('')
   const fileInput = useRef<HTMLInputElement>(null)
 
-  const filteredCount = useMemo(() => bank.filter(q => settings.categories.includes(q.category)).length,[bank,settings.categories])
+  const filteredBank = useMemo(() => bank.filter(question =>
+    settings.categories.includes(question.category) &&
+    settings.questionTypes.includes(question.type) &&
+    !settings.excludedQuestionIds.includes(question.id)
+  ),[bank,settings.categories,settings.questionTypes,settings.excludedQuestionIds])
+  const filteredCount = filteredBank.length
   const q = queue[index]
   const sequenceAnswer = q?.sequence?.join(' → ') || ''
   const pickedAnswer = q?.type === 'sequence' ? selected.join(' → ') : selected[0]
@@ -189,7 +201,8 @@ function App() {
   function speak() {
     if (!q || !settings.voice || !('speechSynthesis' in window)) { notify('이 기기에서는 음성 읽기를 사용할 수 없어요.'); return }
     window.speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(q.question.replace(/[□ㅅㅈㄷㅇㄱㅁㅎㅂㅋㅌㅍㅊ]+/g,'빈칸'))
+    const spoken=q.type==='initial'?'초성을 보고 위인 이름을 말해 보세요.':q.question.replace(/□(?:\s*□)*/g,'빈칸')
+    const u = new SpeechSynthesisUtterance(spoken)
     u.lang='ko-KR'; u.rate=settings.voiceRate
     const voices=window.speechSynthesis.getVoices(); u.voice=voices.find(v=>v.lang.toLowerCase().startsWith('ko')) || null
     window.speechSynthesis.speak(u)
@@ -198,12 +211,13 @@ function App() {
 
   function startPreset(kind:'song'|'person'|'all') {
     const cats:Category[]=kind==='song'?['song']:kind==='person'?['person']:['song','person','hangul']
-    const max=bank.filter(v=>cats.includes(v.category)).length
-    const next={...settings,categories:cats,count:kind==='all'?max:Math.min(settings.count,max),random:true}
+    const types:QuestionType[]=kind==='song'?['blank','initial','missing','sequence']:kind==='person'?['choice','ox']:['blank','initial','missing','sequence','choice','ox']
+    const max=bank.filter(v=>cats.includes(v.category)&&types.includes(v.type)&&!settings.excludedQuestionIds.includes(v.id)).length
+    const next={...settings,categories:cats,questionTypes:types,count:kind==='all'?max:Math.min(settings.count,max),random:true}
     setSettings(next); startGame(next)
   }
   function startGame(next=settings) {
-    const pool=bank.filter(v=>next.categories.includes(v.category)).map(distributeAnswerPosition); const n=Math.min(next.count,pool.length)
+    const pool=bank.filter(v=>next.categories.includes(v.category)&&next.questionTypes.includes(v.type)&&!next.excludedQuestionIds.includes(v.id)).map(distributeAnswerPosition); const n=Math.min(next.count,pool.length)
     const result=prepareQueue(pool,n,next.random,next.finals)
     if(!result.length){notify('출제할 문제를 하나 이상 선택해 주세요.');return}
     setSettings({...next,count:n}); setQueue(result); setIndex(0); setScores([0,0]); setCorrect(0); setAwarded({}); resetQuestion(); setScreen('game')
@@ -240,16 +254,16 @@ function App() {
       <div className="hero-bell"><div className="sunburst"/><Bell/></div>
     </main>
     <section className="start-grid" aria-label="게임 시작">
-      <button className="start-card song" onClick={()=>startPreset('song')}><span className="card-icon">♪</span><b>노래 골든벨</b><small>노래 속 이름과 순서 · 20문제</small><ArrowRight/></button>
+      <button className="start-card song" onClick={()=>startPreset('song')}><span className="card-icon">♪</span><b>노래 골든벨</b><small>4가지 유형 · 50문제</small><ArrowRight/></button>
       <button className="start-card person" onClick={()=>startPreset('person')}><span className="card-icon">♛</span><b>위인 골든벨</b><small>8명의 이야기 · 24문제</small><ArrowRight/></button>
-      <button className="start-card all" onClick={()=>startPreset('all')}><span className="card-icon">★</span><b>전체 골든벨</b><small>노래 · 위인 · 한글 · 48문제</small><ArrowRight/></button>
+      <button className="start-card all" onClick={()=>startPreset('all')}><span className="card-icon">★</span><b>전체 골든벨</b><small>노래 · 위인 · 한글 · 80문제</small><ArrowRight/></button>
     </section>
     <div className="home-actions">{hasSession&&<button className="soft-btn" onClick={continueGame}><Play/> 이어서 하기</button>}<button className="soft-btn" onClick={()=>setScreen('settings')}><SettingsIcon/> 교사 설정</button><button className="soft-btn" onClick={()=>setScreen('editor')}><Edit3/> 문제 편집</button></div>
-    <footer><span>총 48문제</span><i/> <span>음성 지원</span><i/> <span>오프라인 문제은행</span></footer>
+    <footer><span>총 80문제</span><i/> <span>음성 지원</span><i/> <span>오프라인 문제은행</span></footer>
     {toast&&<div className="toast">{toast}</div>}
   </div>
 
-  if(screen==='settings') return <SettingsPanel settings={settings} setSettings={setSettings} available={filteredCount} onBack={()=>setScreen('home')} onEditor={()=>setScreen('editor')} onStart={()=>startGame()} />
+  if(screen==='settings') return <SettingsPanel settings={settings} setSettings={setSettings} bank={bank} available={filteredCount} onBack={()=>setScreen('home')} onEditor={()=>setScreen('editor')} onStart={()=>startGame()} />
   if(screen==='editor') return <Editor bank={bank} setBank={setBank} onBack={()=>setScreen('settings')} notify={notify} fileInput={fileInput}/>
   if(screen==='finish') return <Finish mode={settings.mode} scores={scores} correct={correct} total={queue.length} teamNames={settings.teamNames} ringing={ringing} onRing={ringBell} onHome={()=>setScreen('home')} onAgain={()=>startGame()} />
 
@@ -264,19 +278,19 @@ function App() {
       <div className="question-meta"><span className={`cat cat-${q.category}`}>{categoryNames[q.category]}</span><span>{typeNames[q.type]}</span><span>{q.difficulty}</span>{settings.finals&&index>=queue.length-3&&<strong><Medal/> 결승 문제</strong>}</div>
       <section className="question-card">
         <Art name={q.image} label={q.person || q.answer}/>
-        <div className="question-content"><p className="question-number">문제 {index+1}</p><h2>{displayQuestion(q,revealed)}</h2>
-          {hintStep>0&&!revealed&&<div className="hint-box"><HelpCircle/> 힌트 {hintStep}: {q.type==='missing'&&hintStep===1?q.hint.charAt(0):q.hint}</div>}
+        <div className={`question-content type-${q.type}`}><p className="question-number">문제 {index+1}</p><h2>{displayQuestion(q,revealed)}</h2>
+          {hintStep>0&&!revealed&&<div className="hint-box"><HelpCircle/> 힌트 {hintStep}: {hintText(q,hintStep)}</div>}
           {q.type==='sequence'&&<div className="sequence-picked">{selected.length?selected.map((v,i)=><span key={v}>{i+1}. {v}</span>):<small>아래 카드를 순서대로 눌러 주세요</small>}</div>}
           {!isVerbal(q)&&<div className={`options ${q.type==='ox'?'ox-options':''}`}>{q.options.map((o,i)=><button key={o} onClick={()=>choose(o)} className={`${selected.includes(o)?'selected':''} ${revealed&&o===q.answer?'answer':''} ${revealed&&selected.includes(o)&&o!==q.answer?'wrong':''}`}><span>{q.type==='ox'?o:String.fromCharCode(65+i)}</span>{q.type==='ox'?'':o}</button>)}</div>}
           {isVerbal(q)&&!revealed&&<div className="teacher-judge"><span>아이들이 말한 답을 표시해 주세요</span><button className={teacherCorrect===true?'active':''} onClick={()=>setTeacherCorrect(true)}><Check/> 맞았어요</button><button className={teacherCorrect===false?'active no':''} onClick={()=>setTeacherCorrect(false)}><X/> 다시 생각해요</button></div>}
-          {revealed&&<div className="answer-panel"><div className="answer-title"><Sparkles/><span>정답</span><b>{q.answer}</b></div><p>{q.explanation}</p></div>}
+          {revealed&&<div className="answer-panel"><div className="answer-title"><Sparkles/><span>정답</span><AnimatedAnswer answer={q.answer}/></div><p>{q.explanation}</p></div>}
         </div>
       </section>
       {settings.mode==='team'&&settings.scoreboard&&<div className="team-controls">{settings.teamNames.map((name,i)=><div key={name}><b>{name}</b><button onClick={()=>awardTeam(i as 0|1,10)}>+10</button><button onClick={()=>awardTeam(i as 0|1,-10)}>−10</button></div>)}</div>}
     </main>
     <nav className="game-nav">
       <button onClick={prev} disabled={index===0}><ChevronLeft/> 이전</button>
-      <div>{settings.hints&&<button className="hint-btn" onClick={()=>setHintStep(v=>Math.min(2,v+1))} disabled={revealed}><HelpCircle/> 힌트</button>}<button className="reveal-btn" onClick={()=>reveal()} disabled={revealed||(!isVerbal(q)&&!selected.length)}><Sparkles/> 정답 공개</button></div>
+      <div>{settings.hints&&<button className="hint-btn" onClick={()=>setHintStep(v=>Math.min(hintLimit(q),v+1))} disabled={revealed||hintStep>=hintLimit(q)}><HelpCircle/> 힌트</button>}<button className="reveal-btn" onClick={()=>reveal()} disabled={revealed||(!isVerbal(q)&&!selected.length)}><Sparkles/> 정답 공개</button></div>
       <button className="next-btn" onClick={next} disabled={!revealed}>{index===queue.length-1?'결과 보기':'다음'} <ArrowRight/></button>
     </nav>
     {toast&&<div className="toast">{toast}</div>}
@@ -288,16 +302,57 @@ function Scoreboard({mode,correct,scores,teamNames}:{mode:GameMode;correct:numbe
   return <aside className="score-strip"><span>{mode==='challenge'?'도전 점수':'함께 맞힌 문제'}</span><b>{mode==='challenge'?correct*10:correct}{mode==='challenge'?'점':'개'}</b></aside>
 }
 
-function SettingsPanel({settings,setSettings,available,onBack,onEditor,onStart}:{settings:Settings;setSettings:(s:Settings)=>void;available:number;onBack:()=>void;onEditor:()=>void;onStart:()=>void}){
-  const toggleCat=(cat:Category)=>{const cats=settings.categories.includes(cat)?settings.categories.filter(v=>v!==cat):[...settings.categories,cat];if(cats.length)setSettings({...settings,categories:cats,count:Math.min(settings.count,defaultQuestions.filter(v=>cats.includes(v.category)).length)})}
-  const modes:[GameMode,string,string][]=[['practice','연습 골든벨','힌트와 자유로운 이동'],['challenge','도전 골든벨','문제당 10점'],['team','팀 대항전','두 팀 점수판'],['cooperate','협동 골든벨','모두 함께 정답 모으기']]
+function SettingsPanel({settings,setSettings,bank,available,onBack,onEditor,onStart}:{settings:Settings;setSettings:(s:Settings)=>void;bank:Question[];available:number;onBack:()=>void;onEditor:()=>void;onStart:()=>void}){
+  const modes:[GameMode,string,string][]=[['practice','연습 골든벨','힌트와 자유로운 이동'],['challenge','도전 골든벨','문제당 10점'],['team','팀 대항전','두 팀 점수판'],['cooperate','협동 골든벨','탈락 없이 모두 함께']]
+  const allTypes=Object.keys(typeNames) as QuestionType[]
+  const quickCounts=[5,10,15,20,25,30,40,50,60,70]
+  const matching=bank.filter(q=>settings.categories.includes(q.category)&&settings.questionTypes.includes(q.type))
+  const countValue=Math.min(settings.count,Math.max(1,available))
+  const apply=(next:Settings)=>{
+    const usable=bank.filter(q=>next.categories.includes(q.category)&&next.questionTypes.includes(q.type)&&!next.excludedQuestionIds.includes(q.id)).length
+    setSettings({...next,count:Math.min(Math.max(1,next.count),Math.max(1,usable))})
+  }
+  const toggleCat=(cat:Category)=>{
+    const cats=settings.categories.includes(cat)?settings.categories.filter(v=>v!==cat):[...settings.categories,cat]
+    if(cats.length)apply({...settings,categories:cats})
+  }
+  const toggleType=(type:QuestionType)=>{
+    const types=settings.questionTypes.includes(type)?settings.questionTypes.filter(v=>v!==type):[...settings.questionTypes,type]
+    if(types.length)apply({...settings,questionTypes:types})
+  }
+  const toggleQuestion=(id:string)=>{
+    const excluded=settings.excludedQuestionIds.includes(id)?settings.excludedQuestionIds.filter(v=>v!==id):[...settings.excludedQuestionIds,id]
+    apply({...settings,excludedQuestionIds:excluded})
+  }
+  const setMatching=(checked:boolean)=>{
+    const ids=new Set(matching.map(q=>q.id))
+    const excluded=checked?settings.excludedQuestionIds.filter(id=>!ids.has(id)):[...new Set([...settings.excludedQuestionIds,...ids])]
+    apply({...settings,excludedQuestionIds:excluded})
+  }
   return <div className="panel-page"><header><button className="round-btn" onClick={onBack}><ArrowLeft/></button><div><small>어진반 위인 프로젝트</small><h1>교사 설정</h1></div><button className="soft-btn" onClick={onEditor}><Edit3/> 문제 편집</button></header>
-    <main className="settings-layout"><section className="setting-card"><h2>1. 진행 모드</h2><div className="mode-grid">{modes.map(([id,name,desc])=><button className={settings.mode===id?'active':''} onClick={()=>setSettings({...settings,mode:id})} key={id}><b>{name}</b><small>{desc}</small></button>)}</div>{settings.mode==='team'&&<div className="team-inputs"><input value={settings.teamNames[0]} onChange={e=>setSettings({...settings,teamNames:[e.target.value,settings.teamNames[1]]})}/><input value={settings.teamNames[1]} onChange={e=>setSettings({...settings,teamNames:[settings.teamNames[0],e.target.value]})}/></div>}</section>
-      <section className="setting-card"><h2>2. 문제 고르기</h2><div className="check-grid">{(['song','person','hangul'] as Category[]).map(c=><label key={c}><input type="checkbox" checked={settings.categories.includes(c)} onChange={()=>toggleCat(c)}/><span>{categoryNames[c]}<small>{c==='song'?'20문제':c==='person'?'24문제':'4문제'}</small></span></label>)}</div><div className="range-row"><label>문제 수 <b>{Math.min(settings.count,available)}문제</b></label><input type="range" min="1" max={Math.max(1,available)} value={Math.min(settings.count,Math.max(1,available))} onChange={e=>setSettings({...settings,count:Number(e.target.value)})}/><button onClick={()=>setSettings({...settings,count:available})}>선택 전체</button></div></section>
-      <section className="setting-card"><h2>3. 수업 도구</h2><div className="switch-list">
+    <main className="settings-layout">
+      <section className="setting-card"><h2>1. 진행 모드</h2><div className="mode-grid">{modes.map(([id,name,desc])=><button className={settings.mode===id?'active':''} onClick={()=>setSettings({...settings,mode:id})} key={id}><b>{name}</b><small>{desc}</small></button>)}</div>{settings.mode==='team'&&<div className="team-inputs"><input value={settings.teamNames[0]} onChange={e=>setSettings({...settings,teamNames:[e.target.value,settings.teamNames[1]]})}/><input value={settings.teamNames[1]} onChange={e=>setSettings({...settings,teamNames:[settings.teamNames[0],e.target.value]})}/></div>}</section>
+
+      <section className="setting-card"><h2>2. 주제와 유형 고르기</h2>
+        <div className="check-grid">{(['song','person','hangul'] as Category[]).map(c=><label key={c}><input type="checkbox" checked={settings.categories.includes(c)} onChange={()=>toggleCat(c)}/><span>{categoryNames[c]}<small>{c==='song'?'50문제':c==='person'?'24문제':'6문제'}</small></span></label>)}</div>
+        <div className="type-check-grid">{allTypes.map(type=><label key={type}><input type="checkbox" checked={settings.questionTypes.includes(type)} onChange={()=>toggleType(type)}/><span>{typeNames[type]}<small>{bank.filter(q=>q.type===type).length}문제</small></span></label>)}</div>
+      </section>
+
+      <section className="setting-card"><h2>3. 출제할 문제 수</h2>
+        <div className="quick-counts">{quickCounts.filter(n=>n<available).map(n=><button key={n} className={countValue===n?'active':''} onClick={()=>setSettings({...settings,count:n})}>{n}</button>)}<button className={countValue===available?'active':''} onClick={()=>setSettings({...settings,count:Math.max(1,available)})}>전체 {available}</button></div>
+        <div className="range-row"><label>문제 수 <b>{Math.min(countValue,available)}문제</b></label><input type="range" min="1" max={Math.max(1,available)} value={countValue} onChange={e=>setSettings({...settings,count:Number(e.target.value)})}/><input className="count-input" type="number" min="1" max={Math.max(1,available)} value={countValue} onChange={e=>setSettings({...settings,count:Math.min(Math.max(1,Number(e.target.value)||1),Math.max(1,available))})}/></div>
+        <p className="setting-note">필터와 직접 선택에 따라 최대 문제 수가 자동으로 조정됩니다. 같은 문제는 한 회차에 한 번만 나옵니다.</p>
+      </section>
+
+      <section className="setting-card manual-picker"><details><summary><span><b>4. 출제할 문제 직접 체크</b><small>현재 조건 {matching.length}개 중 {available}개 선택</small></span><ArrowRight/></summary>
+        <div className="manual-actions"><button onClick={()=>setMatching(true)}>현재 조건 모두 선택</button><button onClick={()=>setMatching(false)}>현재 조건 모두 해제</button></div>
+        <div className="manual-list">{matching.map((question,index)=><label key={question.id}><input type="checkbox" checked={!settings.excludedQuestionIds.includes(question.id)} onChange={()=>toggleQuestion(question.id)}/><span><b>{String(index+1).padStart(2,'0')}</b><em>{typeNames[question.type]}</em>{question.question}</span></label>)}</div>
+      </details></section>
+
+      <section className="setting-card"><h2>5. 수업 도구</h2><div className="switch-list">
         <Switch label="문제 순서 랜덤" value={settings.random} onChange={v=>setSettings({...settings,random:v})}/><Switch label="힌트 사용" value={settings.hints} onChange={v=>setSettings({...settings,hints:v})}/><Switch label="한국어 음성" value={settings.voice} onChange={v=>setSettings({...settings,voice:v})}/><Switch label="효과음" value={settings.sound} onChange={v=>setSettings({...settings,sound:v})}/><Switch label="점수판 표시" value={settings.scoreboard} onChange={v=>setSettings({...settings,scoreboard:v})}/><Switch label="선택 후 자동 공개" value={settings.autoReveal} onChange={v=>setSettings({...settings,autoReveal:v})}/><Switch label="마지막 3문제 결승" value={settings.finals} onChange={v=>setSettings({...settings,finals:v})}/>
       </div><div className="rate-row"><label>읽기 속도 <b>{settings.voiceRate.toFixed(1)}×</b></label><input type="range" min="0.6" max="1.2" step="0.1" value={settings.voiceRate} onChange={e=>setSettings({...settings,voiceRate:Number(e.target.value)})}/></div></section>
-    </main><div className="panel-footer"><button className="reset-btn" onClick={()=>setSettings(DEFAULT_SETTINGS)}><RotateCcw/> 기본값</button><div><span>출제 가능 {available}문제</span><button className="primary-btn" onClick={onStart}>이 설정으로 시작 <ArrowRight/></button></div></div>
+    </main><div className="panel-footer"><button className="reset-btn" onClick={()=>setSettings(DEFAULT_SETTINGS)}><RotateCcw/> 기본값</button><div><span>출제 가능 {available}문제</span><button className="primary-btn" onClick={onStart} disabled={!available}>이 설정으로 시작 <ArrowRight/></button></div></div>
   </div>
 }
 
@@ -309,7 +364,7 @@ function Editor({bank,setBank,onBack,notify,fileInput}:{bank:Question[];setBank:
   function save(q:Question){ if(!q.id.trim()||!q.question.trim()||!q.answer.trim()){notify('ID, 질문, 정답은 꼭 입력해 주세요.');return} if(bank.some(v=>v.id===q.id&&v!==editing)){notify('같은 ID가 이미 있어요.');return} setBank(editing?bank.map(v=>v.id===editing.id?q:v):[...bank,q]);setEditing(null);notify('문제를 저장했어요.') }
   function exportJson(){const blob=new Blob([JSON.stringify(bank,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='어진반-위인골든벨-문제은행.json';a.click();URL.revokeObjectURL(a.href)}
   function importJson(file?:File){if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(String(reader.result));if(!Array.isArray(data)||data.some(q=>!q.id||!q.question||!q.answer||!q.category||!q.type))throw 0;setBank(data);notify(`${data.length}문제를 가져왔어요.`)}catch{notify('올바른 문제 JSON 파일이 아니에요.')}};reader.readAsText(file)}
-  return <div className="panel-page editor-page"><header><button className="round-btn" onClick={onBack}><ArrowLeft/></button><div><small>오프라인 문제은행</small><h1>문제 편집</h1></div><div className="editor-actions"><input ref={fileInput} hidden type="file" accept="application/json" onChange={e=>importJson(e.target.files?.[0])}/><button className="soft-btn" onClick={()=>fileInput.current?.click()}><Upload/> JSON 가져오기</button><button className="soft-btn" onClick={exportJson}><Download/> 내보내기</button><button className="soft-btn" onClick={()=>{if(confirm('기본 48문제로 복원할까요?'))setBank(defaultQuestions)}}><RotateCcw/> 기본 복원</button></div></header>
+  return <div className="panel-page editor-page"><header><button className="round-btn" onClick={onBack}><ArrowLeft/></button><div><small>오프라인 문제은행</small><h1>문제 편집</h1></div><div className="editor-actions"><input ref={fileInput} hidden type="file" accept="application/json" onChange={e=>importJson(e.target.files?.[0])}/><button className="soft-btn" onClick={()=>fileInput.current?.click()}><Upload/> JSON 가져오기</button><button className="soft-btn" onClick={exportJson}><Download/> 내보내기</button><button className="soft-btn" onClick={()=>{if(confirm('기본 80문제로 복원할까요?'))setBank(defaultQuestions)}}><RotateCcw/> 기본 복원</button></div></header>
     <div className="editor-toolbar"><div>{(['all','song','person','hangul'] as const).map(c=><button className={filter===c?'active':''} onClick={()=>setFilter(c)} key={c}>{c==='all'?`전체 ${bank.length}`:`${categoryNames[c]} ${bank.filter(v=>v.category===c).length}`}</button>)}</div><button className="primary-btn" onClick={()=>setEditing({id:`custom-${Date.now()}`,category:'person',type:'choice',difficulty:'쉬움',question:'',options:['','',''],answer:'',explanation:'',hint:'',image:'sparkles'})}><Plus/> 문제 추가</button></div>
     <main className="question-table">{visible.map((q,i)=><article key={q.id}><span>{String(i+1).padStart(2,'0')}</span><div><div><b>{categoryNames[q.category]}</b><small>{typeNames[q.type]} · {q.difficulty}</small></div><h3>{q.question}</h3><p>정답: <strong>{q.answer}</strong></p></div><button onClick={()=>setEditing(q)}><Edit3/></button><button className="danger" onClick={()=>{if(confirm('이 문제를 삭제할까요?'))setBank(bank.filter(v=>v.id!==q.id))}}><Trash2/></button></article>)}</main>
     {editing&&<QuestionForm value={editing} onCancel={()=>setEditing(null)} onSave={save}/>} 

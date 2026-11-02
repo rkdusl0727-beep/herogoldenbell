@@ -13,14 +13,16 @@ npm run dev
 
 ## 구조
 
-- `src/data/questions.ts`: 기본 48문제(노래 20, 위인 24, 한글 4)
+- `src/data/questions80.ts`: 기본 80문제(노래 50, 위인 24, 한글 6)
 - `src/App.tsx`: 진행 모드, 음성, 점수, 편집기, 저장/이어하기
 - `src/index.css`: 전자칠판 16:9 및 모바일 반응형 디자인
 - `.openai/hosting.json`: Sites 배포 설정
 
 ## 문제 수정
 
-앱의 **문제 편집**에서 추가·수정·삭제, 이미지 변경, JSON 가져오기/내보내기, 기본 복원을 할 수 있습니다. 직접 기본값을 고치려면 `src/data/questions.ts`의 `defaultQuestions`를 수정합니다. 필수 필드는 `id`, `category`, `type`, `difficulty`, `question`, `options`, `answer`, `explanation`, `hint`, `image`이며 순서 문제에는 `sequence`가 필요합니다.
+앱의 **문제 편집**에서 추가·수정·삭제, 이미지 변경, JSON 가져오기/내보내기, 기본 복원을 할 수 있습니다. 직접 기본값을 고치려면 `src/data/questions80.ts`의 `defaultQuestions`를 수정합니다. 필수 필드는 `id`, `category`, `type`, `difficulty`, `question`, `options`, `answer`, `explanation`, `hint`, `image`이며 순서 문제에는 `sequence`가 필요합니다.
+
+문제 수와 정답 데이터 검증은 `npm run validate`로 실행합니다.
 
 ## 수업 사용 팁
 
