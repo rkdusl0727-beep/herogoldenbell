@@ -94,6 +94,11 @@ const people: Question[] = [
   {id:'p32',category:'person',type:'short',difficulty:'쉬움',question:'나라의 독립을 위해 만세 운동을 펼친 유관순은 어떤 활동을 한 사람일까요?',options:[],answer:'독립운동가',explanation:'유관순은 우리나라의 독립을 위해 힘쓴 독립운동가예요.',hint:'나라의 독립을 위해 움직인 사람이에요.',image:'./assets/people/yu-gwan-sun.png',person:'유관순'},
   {id:'p33',category:'person',type:'short',difficulty:'쉬움',question:'방정환이 어린이를 소중히 여기며 만드는 데 힘쓴 기념일은 무엇일까요?',options:[],answer:'어린이날',explanation:'방정환은 어린이를 존중하는 마음을 널리 알리고 어린이날을 만드는 데 힘썼어요.',hint:'5월 5일이에요.',image:'children',person:'방정환'},
   {id:'p34',category:'person',type:'short',difficulty:'쉬움',question:'장영실이 만든 물의 흐름으로 시간을 알려 주는 자동 물시계는 무엇일까요?',options:[],answer:'자격루',explanation:'자격루는 물의 흐름을 이용해 스스로 시간을 알리는 시계예요.',hint:'‘자’로 시작하는 세 글자예요.',image:'water-clock',person:'장영실'},
+  {id:'p35',category:'person',type:'short',difficulty:'쉬움',question:'신사임당이 풀과 꽃, 곤충을 섬세하게 그린 그림은 무엇일까요?',options:[],answer:'초충도',explanation:'신사임당의 초충도에는 풀, 꽃, 곤충이 섬세하게 표현되어 있어요.',hint:'풀을 뜻하는 ‘초’와 벌레를 뜻하는 ‘충’이 들어가요.',image:'painting',person:'신사임당'},
+  {id:'p36',category:'person',type:'short',difficulty:'쉬움',question:'김정호가 우리나라의 산과 강, 길을 자세히 담아 만든 지도는 무엇일까요?',options:[],answer:'대동여지도',explanation:'김정호는 우리나라의 모습을 자세히 담은 대동여지도를 만들었어요.',hint:'이름에 ‘지도’가 들어가요.',image:'map',person:'김정호'},
+  {id:'p37',category:'person',type:'short',difficulty:'쉬움',question:'허준이 편찬한 우리나라의 대표적인 의학책은 무엇일까요?',options:[],answer:'동의보감',explanation:'동의보감은 허준이 편찬한 의학책이에요.',hint:'아픈 사람을 치료하는 방법을 담은 책이에요.',image:'book',person:'허준'},
+  {id:'p38',category:'person',type:'short',difficulty:'쉬움',question:'안중근 의사가 붓으로 남긴 글씨 작품을 무엇이라고 할까요?',options:[],answer:'유묵',explanation:'안중근 의사가 남긴 소중한 붓글씨 작품을 유묵이라고 해요.',hint:'‘유’로 시작하는 두 글자예요.',image:'book',person:'안중근'},
+  {id:'p39',category:'person',type:'short',difficulty:'쉬움',question:'유관순이 독립 만세 운동을 펼친 장터는 어디일까요?',options:[],answer:'아우내장터',explanation:'유관순은 충청남도 천안의 아우내장터에서 독립 만세 운동을 이끌었어요.',hint:'‘아’로 시작하는 장터예요.',image:'flag',person:'유관순'},
 ]
 
 const hangul: Question[] = [

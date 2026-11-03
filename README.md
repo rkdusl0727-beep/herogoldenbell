@@ -13,7 +13,7 @@ npm run dev
 
 ## 구조
 
-- `src/data/questions80.ts`: 기본 90문제(노래 50, 위인 34, 한글 6)
+- `src/data/questions80.ts`: 기본 95문제(노래 50, 위인 39, 한글 6)
 - `src/App.tsx`: 진행 모드, 음성, 점수, 편집기, 저장/이어하기
 - `src/index.css`: 전자칠판 16:9 및 모바일 반응형 디자인
 - `.openai/hosting.json`: Sites 배포 설정
