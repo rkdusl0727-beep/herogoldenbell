@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { categoryNames, defaultQuestions, typeNames } from './data/questions80'
 import type { Category, GameMode, Question, QuestionType, Settings } from './types'
-import { prepareQueue, shuffle } from './utils/questionQueue'
+import { prepareFreshQueue, prepareQueue, shuffle } from './utils/questionQueue'
 
 type Screen = 'home' | 'settings' | 'game' | 'editor' | 'finish'
 type SavedSession = { queueIds:string[]; index:number; scores:[number,number]; correct:number; settings:Settings }
@@ -32,7 +32,8 @@ const balancedChoiceIds = [
   'p01','p02','p04','p05','p07','p08','p10','p11','p13','p14','p16','p17','p19','p20','p22','p23','p25','p26','p27','p28','p29',
   'h01','h02','h03','h04','h05','h06',
 ]
-const QUESTION_COPY_VERSION = '2026-11-03-subjective-10-v16'
+const QUESTION_COPY_VERSION = '2026-11-03-fresh-all-random-v17'
+const LAST_ALL_ORDER_KEY = 'goldenbell-last-all-order'
 function modeName(mode:GameMode) { return ({practice:'연습 골든벨',challenge:'도전 골든벨',team:'팀 대항전',cooperate:'협동 골든벨'} as const)[mode] }
 function isVerbal(q:Question) { return ['blank','initial','missing','short'].includes(q.type) }
 function displayQuestion(q:Question, revealed:boolean) {
@@ -175,8 +176,14 @@ function App() {
   }
   function startGame(next=settings) {
     const pool=bank.filter(v=>next.categories.includes(v.category)&&next.questionTypes.includes(v.type)&&!next.excludedQuestionIds.includes(v.id)).map(distributeAnswerPosition); const n=Math.min(next.count,pool.length)
-    const result=prepareQueue(pool,n)
+    const allCategories=(['song','person','hangul'] as Category[]).every(category=>next.categories.includes(category))
+    const allBankTypes=[...new Set(bank.map(question=>question.type))].every(type=>next.questionTypes.includes(type))
+    const isFullGoldenBell=allCategories&&allBankTypes&&n===pool.length
+    let previousIds:string[]=[]
+    if(isFullGoldenBell){try{previousIds=JSON.parse(localStorage.getItem(LAST_ALL_ORDER_KEY)||'[]')}catch{previousIds=[]}}
+    const result=isFullGoldenBell?prepareFreshQueue(pool,n,previousIds):prepareQueue(pool,n)
     if(!result.length){notify('출제할 문제를 하나 이상 선택해 주세요.');return}
+    if(isFullGoldenBell) localStorage.setItem(LAST_ALL_ORDER_KEY,JSON.stringify(result.map(question=>question.id)))
     setSettings({...next,count:n,random:true}); setQueue(result); setIndex(0); setScores([0,0]); setCorrect(0); setAwarded({}); resetQuestion(); setScreen('game')
   }
   function continueGame(){

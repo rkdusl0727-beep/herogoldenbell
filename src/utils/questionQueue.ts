@@ -87,3 +87,11 @@ export function prepareQueue(pool:Question[],count:number) {
     question.category==='song'&&question.verse ? balancedSongs[songIndex++] : question
   )
 }
+
+export function prepareFreshQueue(pool:Question[],count:number,previousIds:string[]=[]) {
+  let result=prepareQueue(pool,count)
+  if(result.length<2||!previousIds.length) return result
+  for(let attempt=0;attempt<20&&result[0]?.id===previousIds[0];attempt++) result=prepareQueue(pool,count)
+  if(result[0]?.id===previousIds[0]) result=[...result.slice(1),result[0]]
+  return result
+}

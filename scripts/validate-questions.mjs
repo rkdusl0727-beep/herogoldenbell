@@ -1,5 +1,5 @@
 import { defaultQuestions } from '../src/data/questions80.ts'
-import { prepareQueue } from '../src/utils/questionQueue.ts'
+import { prepareFreshQueue, prepareQueue } from '../src/utils/questionQueue.ts'
 
 const errors=[]
 const expect=(condition,message)=>{if(!condition)errors.push(message)}
@@ -47,6 +47,13 @@ for(const type of [undefined,'blank','initial','missing']){
       expect(Math.max(...prefixCounts)-Math.min(...prefixCounts)<=1,`${type||'전체'} ${requested}문제의 ${end}번째까지 절 순환이 고르지 않습니다. (${prefixCounts.join('/')})`)
     }
   }
+}
+for(let attempt=0;attempt<40;attempt++){
+  const first=prepareFreshQueue(defaultQuestions,defaultQuestions.length)
+  const second=prepareFreshQueue(defaultQuestions,defaultQuestions.length,first.map(q=>q.id))
+  expect(second.length===defaultQuestions.length,'전체 골든벨 새 순서의 문제 수가 달라졌습니다.')
+  expect(new Set(second.map(q=>q.id)).size===defaultQuestions.length,'전체 골든벨 새 순서에 중복 문제가 있습니다.')
+  expect(second[0].id!==first[0].id,'전체 골든벨은 직전 회차와 첫 문제부터 달라야 합니다.')
 }
 const bannedSongPhrases=['노래의','노래에서','이어지는','함께 나오는','다음 인물','이름 완성']
 expect(!song.some(q=>[q.question,q.clue].filter(Boolean).some(text=>bannedSongPhrases.some(phrase=>text.includes(phrase)))),'노래 문제에 설명형 메타 표현이 남아 있습니다.')
