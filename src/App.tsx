@@ -12,7 +12,7 @@ type Screen = 'home' | 'settings' | 'game' | 'editor' | 'finish'
 type SavedSession = { queueIds:string[]; index:number; scores:[number,number]; correct:number; settings:Settings }
 
 const DEFAULT_SETTINGS: Settings = {
-  mode:'practice', categories:['song','person','hangul'], questionTypes:['blank','initial','missing','choice','ox'], excludedQuestionIds:[], count:20, random:true,
+  mode:'practice', categories:['song','person','hangul'], questionTypes:['blank','initial','missing','choice','ox','short'], excludedQuestionIds:[], count:20, random:true,
   hints:true, voice:true, voiceRate:.9, sound:true, scoreboard:true, autoReveal:false,
   finals:true, teamNames:['햇살팀','별빛팀'],
 }
@@ -32,9 +32,9 @@ const balancedChoiceIds = [
   'p01','p02','p04','p05','p07','p08','p10','p11','p13','p14','p16','p17','p19','p20','p22','p23','p25','p26','p27','p28','p29',
   'h01','h02','h03','h04','h05','h06',
 ]
-const QUESTION_COPY_VERSION = '2026-11-03-five-added-answers-v14'
+const QUESTION_COPY_VERSION = '2026-11-03-subjective-v15'
 function modeName(mode:GameMode) { return ({practice:'연습 골든벨',challenge:'도전 골든벨',team:'팀 대항전',cooperate:'협동 골든벨'} as const)[mode] }
-function isVerbal(q:Question) { return ['blank','initial','missing'].includes(q.type) }
+function isVerbal(q:Question) { return ['blank','initial','missing','short'].includes(q.type) }
 function displayQuestion(q:Question, revealed:boolean) {
   if (q.type === 'blank') {
     const blanks = Array.from(q.answer.replace(/\s/g,'')).map(()=>'□').join(' ')
@@ -68,6 +68,7 @@ function distributeAnswerPosition(q:Question) {
 function hintLimit(q:Question) {
   if(q.type==='initial') return Math.max(1,Array.from(q.answer.replace(/\s/g,'')).length)
   if(q.type==='missing') return Math.max(1,Array.from(q.hint).length)
+  if(q.type==='short') return 1
   return 2
 }
 function hintText(q:Question,step:number) {
@@ -167,7 +168,7 @@ function App() {
 
   function startPreset(kind:'song'|'person'|'all') {
     const cats:Category[]=kind==='song'?['song']:kind==='person'?['person']:['song','person','hangul']
-    const types:QuestionType[]=kind==='song'?['blank','initial','missing']:kind==='person'?['choice','ox']:['blank','initial','missing','choice','ox']
+    const types:QuestionType[]=kind==='song'?['blank','initial','missing']:kind==='person'?['choice','ox','short']:['blank','initial','missing','choice','ox','short']
     const max=bank.filter(v=>cats.includes(v.category)&&types.includes(v.type)&&!settings.excludedQuestionIds.includes(v.id)).length
     const next={...settings,categories:cats,questionTypes:types,count:kind==='all'?max:Math.min(settings.count,max),random:true}
     setSettings(next); startGame(next)
@@ -211,11 +212,11 @@ function App() {
     </main>
     <section className="start-grid" aria-label="게임 시작">
       <button className="start-card song" onClick={()=>startPreset('song')}><span className="card-icon">♪</span><b>노래 골든벨</b><small>3가지 유형 · 50문제</small><ArrowRight/></button>
-      <button className="start-card person" onClick={()=>startPreset('person')}><span className="card-icon">♛</span><b>위인 골든벨</b><small>10명의 이야기 · 29문제</small><ArrowRight/></button>
-      <button className="start-card all" onClick={()=>startPreset('all')}><span className="card-icon">★</span><b>전체 골든벨</b><small>노래 · 위인 · 한글 · 85문제</small><ArrowRight/></button>
+      <button className="start-card person" onClick={()=>startPreset('person')}><span className="card-icon">♛</span><b>위인 골든벨</b><small>10명의 이야기 · 34문제</small><ArrowRight/></button>
+      <button className="start-card all" onClick={()=>startPreset('all')}><span className="card-icon">★</span><b>전체 골든벨</b><small>노래 · 위인 · 한글 · 90문제</small><ArrowRight/></button>
     </section>
     <div className="home-actions">{hasSession&&<button className="soft-btn" onClick={continueGame}><Play/> 이어서 하기</button>}<button className="soft-btn" onClick={()=>setScreen('settings')}><SettingsIcon/> 교사 설정</button><button className="soft-btn" onClick={()=>setScreen('editor')}><Edit3/> 문제 편집</button></div>
-    <footer><span>총 85문제</span><i/> <span>음성 지원</span><i/> <span>오프라인 문제은행</span></footer>
+    <footer><span>총 90문제</span><i/> <span>음성 지원</span><i/> <span>오프라인 문제은행</span></footer>
     {toast&&<div className="toast">{toast}</div>}
   </div>
 
@@ -261,7 +262,7 @@ function Scoreboard({mode,correct,scores,teamNames}:{mode:GameMode;correct:numbe
 function SettingsPanel({settings,setSettings,bank,available,onBack,onEditor,onStart}:{settings:Settings;setSettings:(s:Settings)=>void;bank:Question[];available:number;onBack:()=>void;onEditor:()=>void;onStart:()=>void}){
   const modes:[GameMode,string,string][]=[['practice','연습 골든벨','힌트와 자유로운 이동'],['challenge','도전 골든벨','문제당 10점'],['team','팀 대항전','두 팀 점수판'],['cooperate','협동 골든벨','탈락 없이 모두 함께']]
   const allTypes=(Object.keys(typeNames) as QuestionType[]).filter(type=>bank.some(question=>question.type===type))
-  const quickCounts=[5,10,15,20,25,30,40,50,60,70,80]
+  const quickCounts=[5,10,15,20,25,30,40,50,60,70,80,85]
   const matching=bank.filter(q=>settings.categories.includes(q.category)&&settings.questionTypes.includes(q.type))
   const countValue=Math.min(settings.count,Math.max(1,available))
   const apply=(next:Settings)=>{
@@ -290,7 +291,7 @@ function SettingsPanel({settings,setSettings,bank,available,onBack,onEditor,onSt
       <section className="setting-card"><h2>1. 진행 모드</h2><div className="mode-grid">{modes.map(([id,name,desc])=><button className={settings.mode===id?'active':''} onClick={()=>setSettings({...settings,mode:id})} key={id}><b>{name}</b><small>{desc}</small></button>)}</div>{settings.mode==='team'&&<div className="team-inputs"><input value={settings.teamNames[0]} onChange={e=>setSettings({...settings,teamNames:[e.target.value,settings.teamNames[1]]})}/><input value={settings.teamNames[1]} onChange={e=>setSettings({...settings,teamNames:[settings.teamNames[0],e.target.value]})}/></div>}</section>
 
       <section className="setting-card"><h2>2. 주제와 유형 고르기</h2>
-        <div className="check-grid">{(['song','person','hangul'] as Category[]).map(c=><label key={c}><input type="checkbox" checked={settings.categories.includes(c)} onChange={()=>toggleCat(c)}/><span>{categoryNames[c]}<small>{c==='song'?'50문제':c==='person'?'29문제':'6문제'}</small></span></label>)}</div>
+        <div className="check-grid">{(['song','person','hangul'] as Category[]).map(c=><label key={c}><input type="checkbox" checked={settings.categories.includes(c)} onChange={()=>toggleCat(c)}/><span>{categoryNames[c]}<small>{c==='song'?'50문제':c==='person'?'34문제':'6문제'}</small></span></label>)}</div>
         <div className="type-check-grid">{allTypes.map(type=><label key={type}><input type="checkbox" checked={settings.questionTypes.includes(type)} onChange={()=>toggleType(type)}/><span>{typeNames[type]}<small>{bank.filter(q=>q.type===type).length}문제</small></span></label>)}</div>
       </section>
 
@@ -320,7 +321,7 @@ function Editor({bank,setBank,onBack,notify,fileInput}:{bank:Question[];setBank:
   function save(q:Question){ if(!q.id.trim()||!q.question.trim()||!q.answer.trim()){notify('ID, 질문, 정답은 꼭 입력해 주세요.');return} if(bank.some(v=>v.id===q.id&&v!==editing)){notify('같은 ID가 이미 있어요.');return} setBank(editing?bank.map(v=>v.id===editing.id?q:v):[...bank,q]);setEditing(null);notify('문제를 저장했어요.') }
   function exportJson(){const blob=new Blob([JSON.stringify(bank,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='어진반-위인골든벨-문제은행.json';a.click();URL.revokeObjectURL(a.href)}
   function importJson(file?:File){if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(String(reader.result));if(!Array.isArray(data)||data.some(q=>!q.id||!q.question||!q.answer||!q.category||!q.type))throw 0;setBank(data);notify(`${data.length}문제를 가져왔어요.`)}catch{notify('올바른 문제 JSON 파일이 아니에요.')}};reader.readAsText(file)}
-  return <div className="panel-page editor-page"><header><button className="round-btn" onClick={onBack}><ArrowLeft/></button><div><small>오프라인 문제은행</small><h1>문제 편집</h1></div><div className="editor-actions"><input ref={fileInput} hidden type="file" accept="application/json" onChange={e=>importJson(e.target.files?.[0])}/><button className="soft-btn" onClick={()=>fileInput.current?.click()}><Upload/> JSON 가져오기</button><button className="soft-btn" onClick={exportJson}><Download/> 내보내기</button><button className="soft-btn" onClick={()=>{if(confirm('기본 85문제로 복원할까요?'))setBank(defaultQuestions)}}><RotateCcw/> 기본 복원</button></div></header>
+  return <div className="panel-page editor-page"><header><button className="round-btn" onClick={onBack}><ArrowLeft/></button><div><small>오프라인 문제은행</small><h1>문제 편집</h1></div><div className="editor-actions"><input ref={fileInput} hidden type="file" accept="application/json" onChange={e=>importJson(e.target.files?.[0])}/><button className="soft-btn" onClick={()=>fileInput.current?.click()}><Upload/> JSON 가져오기</button><button className="soft-btn" onClick={exportJson}><Download/> 내보내기</button><button className="soft-btn" onClick={()=>{if(confirm('기본 90문제로 복원할까요?'))setBank(defaultQuestions)}}><RotateCcw/> 기본 복원</button></div></header>
     <div className="editor-toolbar"><div>{(['all','song','person','hangul'] as const).map(c=><button className={filter===c?'active':''} onClick={()=>setFilter(c)} key={c}>{c==='all'?`전체 ${bank.length}`:`${categoryNames[c]} ${bank.filter(v=>v.category===c).length}`}</button>)}</div><button className="primary-btn" onClick={()=>setEditing({id:`custom-${Date.now()}`,category:'person',type:'choice',difficulty:'쉬움',question:'',options:['','',''],answer:'',explanation:'',hint:'',image:'sparkles'})}><Plus/> 문제 추가</button></div>
     <main className="question-table">{visible.map((q,i)=><article key={q.id}><span>{String(i+1).padStart(2,'0')}</span><div><div><b>{categoryNames[q.category]}</b><small>{typeNames[q.type]} · {q.difficulty}{q.verse?` · ${q.verse}절`:''}</small></div><h3>{q.clue?`${q.clue} · ${q.question}`:q.question}</h3><p>정답: <strong>{q.answer}</strong></p></div><button onClick={()=>setEditing(q)}><Edit3/></button><button className="danger" onClick={()=>{if(confirm('이 문제를 삭제할까요?'))setBank(bank.filter(v=>v.id!==q.id))}}><Trash2/></button></article>)}</main>
     {editing&&<QuestionForm value={editing} onCancel={()=>setEditing(null)} onSave={save}/>} 

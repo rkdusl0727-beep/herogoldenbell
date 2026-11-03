@@ -8,7 +8,7 @@ export function shuffle<T>(items:T[]) {
   return mixed
 }
 
-const isVerbal=(question:Question)=>['blank','initial','missing'].includes(question.type)
+const isVerbal=(question:Question)=>['blank','initial','missing','short'].includes(question.type)
 
 function shuffleBalanced(items:Question[]) {
   const buckets = new Map<Question['type'],Question[]>()

@@ -89,6 +89,11 @@ const people: Question[] = [
   {id:'p27',category:'person',type:'choice',difficulty:'쉬움',question:'허준이 편찬한 우리나라의 대표적인 의학책은 무엇일까요?',options:['동의보감','대동여지도','훈민정음'],answer:'동의보감',explanation:'동의보감은 허준이 편찬한 의학책이에요.',hint:'아픈 사람을 치료하는 방법을 담은 책이에요.',image:'book',person:'허준'},
   {id:'p28',category:'person',type:'choice',difficulty:'쉬움',question:'안중근 의사가 붓으로 남긴 글씨 작품을 무엇이라고 할까요?',options:['유묵','초충도','대동여지도'],answer:'유묵',explanation:'안중근 의사가 남긴 소중한 붓글씨 작품을 유묵이라고 해요.',hint:'‘유’로 시작하는 두 글자예요.',image:'book',person:'안중근'},
   {id:'p29',category:'person',type:'choice',difficulty:'쉬움',question:'유관순이 독립 만세 운동을 펼친 장터는 어디일까요?',options:['아우내장터','광장시장','남대문시장'],answer:'아우내장터',explanation:'유관순은 충청남도 천안의 아우내장터에서 독립 만세 운동을 이끌었어요.',hint:'‘아’로 시작하는 장터예요.',image:'flag',person:'유관순'},
+  {id:'p30',category:'person',type:'short',difficulty:'쉬움',question:'백성들이 쉽게 글을 쓰도록 훈민정음을 만든 왕은 누구일까요?',options:[],answer:'세종대왕',explanation:'세종대왕은 백성들이 쉽게 배우고 쓸 수 있도록 훈민정음을 만들었어요.',hint:'이름에 ‘세종’이 들어가요.',image:'./assets/people/sejong.png',person:'세종대왕'},
+  {id:'p31',category:'person',type:'short',difficulty:'보통',question:'이순신 장군이 학이 날개를 편 모양으로 펼친 전술은 무엇일까요?',options:[],answer:'학익진',explanation:'학익진은 학이 날개를 편 것처럼 배를 펼쳐 적을 둘러싸는 전술이에요.',hint:'‘학’으로 시작하는 세 글자예요.',image:'waves',person:'이순신'},
+  {id:'p32',category:'person',type:'short',difficulty:'쉬움',question:'나라의 독립을 위해 만세 운동을 펼친 유관순은 어떤 활동을 한 사람일까요?',options:[],answer:'독립운동가',explanation:'유관순은 우리나라의 독립을 위해 힘쓴 독립운동가예요.',hint:'나라의 독립을 위해 움직인 사람이에요.',image:'./assets/people/yu-gwan-sun.png',person:'유관순'},
+  {id:'p33',category:'person',type:'short',difficulty:'쉬움',question:'방정환이 어린이를 소중히 여기며 만드는 데 힘쓴 기념일은 무엇일까요?',options:[],answer:'어린이날',explanation:'방정환은 어린이를 존중하는 마음을 널리 알리고 어린이날을 만드는 데 힘썼어요.',hint:'5월 5일이에요.',image:'children',person:'방정환'},
+  {id:'p34',category:'person',type:'short',difficulty:'쉬움',question:'장영실이 만든 물의 흐름으로 시간을 알려 주는 자동 물시계는 무엇일까요?',options:[],answer:'자격루',explanation:'자격루는 물의 흐름을 이용해 스스로 시간을 알리는 시계예요.',hint:'‘자’로 시작하는 세 글자예요.',image:'water-clock',person:'장영실'},
 ]
 
 const hangul: Question[] = [
@@ -111,4 +116,4 @@ const songQuestions: Question[] = [...songBlank,...songInitial,...songMissing,..
 
 export const defaultQuestions: Question[] = [...songQuestions,...people,...hangul]
 export const categoryNames = {song:'노래 퀴즈',person:'개별 위인',hangul:'한글 심화'} as const
-export const typeNames = {blank:'가사 빈칸',initial:'초성 퀴즈',missing:'사라진 이름',sequence:'인물 순서',choice:'그림 3지선다',ox:'OX 퀴즈'} as const
+export const typeNames = {blank:'가사 빈칸',initial:'초성 퀴즈',missing:'사라진 이름',sequence:'인물 순서',choice:'그림 3지선다',ox:'OX 퀴즈',short:'주관식'} as const

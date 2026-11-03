@@ -1,5 +1,5 @@
 export type Category = 'song' | 'person' | 'hangul'
-export type QuestionType = 'blank' | 'initial' | 'missing' | 'sequence' | 'choice' | 'ox'
+export type QuestionType = 'blank' | 'initial' | 'missing' | 'sequence' | 'choice' | 'ox' | 'short'
 export type Difficulty = '쉬움' | '보통' | '도전'
 
 export interface Question {
