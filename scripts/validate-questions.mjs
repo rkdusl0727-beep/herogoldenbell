@@ -12,10 +12,10 @@ const initialsOf=(name)=>{
   }).join('')
 }
 
-expect(defaultQuestions.length===80,`전체 문제 수: ${defaultQuestions.length} (예상 80)`)
-expect(new Set(defaultQuestions.map(q=>q.id)).size===80,'문제 ID가 중복되었습니다.')
+expect(defaultQuestions.length===85,`전체 문제 수: ${defaultQuestions.length} (예상 85)`)
+expect(new Set(defaultQuestions.map(q=>q.id)).size===85,'문제 ID가 중복되었습니다.')
 expect(count(defaultQuestions,'category','song')===50,'노래 문제는 50개여야 합니다.')
-expect(count(defaultQuestions,'category','person')===24,'개별 위인 문제는 24개여야 합니다.')
+expect(count(defaultQuestions,'category','person')===29,'개별 위인 문제는 29개여야 합니다.')
 expect(count(defaultQuestions,'category','hangul')===6,'한글 심화 문제는 6개여야 합니다.')
 
 const song=defaultQuestions.filter(q=>q.category==='song')
@@ -79,8 +79,9 @@ for(const q of song.filter(q=>q.type==='sequence')){
 }
 
 const people=defaultQuestions.filter(q=>q.category==='person')
-const requiredPeople=['세종대왕','이순신','유관순','김정호','방정환','신사임당','장영실','문익점']
-for(const person of requiredPeople) expect(people.filter(q=>q.person===person).length===3,`${person} 문제는 3개여야 합니다.`)
+const requiredPeople={세종대왕:3,허준:1,이순신:3,유관순:4,김정호:4,방정환:3,신사임당:4,장영실:3,문익점:3,안중근:1}
+for(const [person,total] of Object.entries(requiredPeople)) expect(people.filter(q=>q.person===person).length===total,`${person} 문제는 ${total}개여야 합니다.`)
+for(const answer of ['초충도','대동여지도','동의보감','유묵','아우내장터']) expect(people.some(q=>q.answer===answer),`위인 골든벨에 정답 ‘${answer}’ 문제가 있어야 합니다.`)
 expect(!people.some(q=>q.person==='정약용'),'정약용은 개별 위인 문제에 포함할 수 없습니다.')
 const bang=people.filter(q=>q.person==='방정환')
 expect(bang.every(q=>q.difficulty==='쉬움'),'방정환 문제는 모두 쉬움이어야 합니다.')
@@ -90,4 +91,4 @@ const oxAnswers=people.filter(q=>q.type==='ox').map(q=>q.answer)
 expect(oxAnswers.filter(answer=>answer==='O').length===4&&oxAnswers.filter(answer=>answer==='X').length===4,'OX 정답은 O 4개, X 4개여야 합니다.')
 
 if(errors.length){console.error(errors.join('\n'));process.exit(1)}
-console.log('검증 완료: 80문제 · 노래 50(빈칸 25/초성 15/이름 완성 10) · 순서 문제 0 · 위인 24 · 한글 6')
+console.log('검증 완료: 85문제 · 노래 50(빈칸 25/초성 15/이름 완성 10) · 순서 문제 0 · 위인 29 · 한글 6')
