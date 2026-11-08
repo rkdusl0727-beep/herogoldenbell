@@ -89,7 +89,8 @@ function Bell({small=false, ringing=false}:{small?:boolean;ringing?:boolean}) {
 function Art({name, label}:{name:string;label?:string}) {
   if (name.startsWith('data:image') || name.endsWith('.png')) return <img className={`question-image ${name.endsWith('.png')?'person-portrait':''}`} src={name} alt={`${label || '위인'} 그림`} />
   const iconName = quizIconNames.has(name) ? name : 'sparkles'
-  return <img className="question-image quiz-icon" src={`./assets/quiz-icons/${iconName}.png`} alt={`${label || '위인'} 그림`} />
+  const iconFile = iconName === 'book' ? 'book-v2' : iconName
+  return <img className="question-image quiz-icon" src={`./assets/quiz-icons/${iconFile}.png`} alt={`${label || '위인'} 그림`} />
 }
 
 function App() {
