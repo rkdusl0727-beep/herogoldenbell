@@ -17,11 +17,10 @@ const DEFAULT_SETTINGS: Settings = {
   finals:true, teamNames:['햇살팀','별빛팀'],
 }
 
-const iconCells: Record<string,number> = {
-  mountain:0, crown:1, egg:2, sparkles:3, map:4, children:5, king:6,
-  'turtle-ship':7, flag:8, sundial:9, cotton:10, painting:11, cards:12,
-  hunmin:13, letters:14, waves:15, book:16, flower:17, 'water-clock':18, hall:19,
-}
+const quizIconNames = new Set([
+  'mountain','crown','egg','sparkles','map','children','king','turtle-ship','flag','sundial',
+  'cotton','painting','cards','hunmin','letters','waves','book','flower','water-clock','hall',
+])
 const portraitById: Record<string,string> = {
   p01:'./assets/people/sejong.png', p04:'./assets/people/yi-sun-sin.png',
   p07:'./assets/people/yu-gwan-sun.png', p10:'./assets/people/kim-jeong-ho.png',
@@ -89,9 +88,8 @@ function Bell({small=false, ringing=false}:{small?:boolean;ringing?:boolean}) {
 
 function Art({name, label}:{name:string;label?:string}) {
   if (name.startsWith('data:image') || name.endsWith('.png')) return <img className={`question-image ${name.endsWith('.png')?'person-portrait':''}`} src={name} alt={`${label || '위인'} 그림`} />
-  const cell = iconCells[name] ?? 3
-  const col = cell % 5, row = Math.floor(cell / 5)
-  return <span className={`symbol-art png-art art-${name}`} role="img" aria-label={`${label || '위인'} 그림`} style={{backgroundImage:"url('./assets/quiz-icons-v2.png')",backgroundSize:'500% 400%',backgroundPosition:`${col*25}% ${row*(100/3)}%`}} />
+  const iconName = quizIconNames.has(name) ? name : 'sparkles'
+  return <img className="question-image quiz-icon" src={`./assets/quiz-icons/${iconName}.png`} alt={`${label || '위인'} 그림`} />
 }
 
 function App() {
